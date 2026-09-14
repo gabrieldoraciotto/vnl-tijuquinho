@@ -2,136 +2,215 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f2a6e" />
 <title>VNL — Tijuquinho Volleyball Nations League</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
+    --navy:#0d2765;
     --blue:#173a95;
-    --blue-deep:#0f2a6e;
-    --blue-card:#1c44ad;
+    --blue-card:#1e47b0;
+    --blue-card-2:#16368c;
     --orange:#f6871f;
-    --orange-light:#ffab3d;
+    --orange-hi:#ffb445;
+    --pink:#ff5fa2;
+    --cyan2:#7fd0ff;
     --white:#ffffff;
-    --ink:#0d1f52;
-    --radius:22px;
-    --shadow:0 14px 34px rgba(6,18,56,.35);
+    --line:rgba(255,255,255,.14);
+    --radius:20px;
+    --shadow:0 16px 40px rgba(5,16,52,.45);
+    --disp:"Anton",system-ui,sans-serif;
+    --ui:"Archivo",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
   body{
-    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-family:var(--ui);
     color:var(--white);
-    background:radial-gradient(120% 90% at 50% -10%, #2450c0 0%, var(--blue) 45%, var(--blue-deep) 100%) fixed;
-    min-height:100vh;
-    -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(120% 80% at 18% -8%, rgba(246,135,31,.20), transparent 46%),
+      radial-gradient(120% 80% at 88% 0%, rgba(56,110,255,.28), transparent 50%),
+      linear-gradient(180deg,#1b3fa2 0%, var(--blue) 40%, var(--navy) 100%) fixed;
+    min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;
   }
-  .wrap{max-width:1040px;margin:0 auto;padding:26px 18px 80px}
+  a{color:inherit}
+  .wrap{max-width:1020px;margin:0 auto;padding:22px 16px 40px}
 
   /* ---------- HERO ---------- */
-  .hero{text-align:center;padding:14px 0 6px}
+  .hero{text-align:center;padding:10px 0 2px;position:relative}
   .vnl{
-    font-weight:900;letter-spacing:2px;line-height:.82;
-    font-size:clamp(74px,20vw,168px);
-    background:linear-gradient(180deg,#ffd27a 0%,var(--orange-light) 30%,var(--orange) 70%,#d8620a 100%);
+    font-family:var(--disp);font-size:clamp(88px,26vw,190px);line-height:.8;letter-spacing:3px;margin:0;
+    background:linear-gradient(178deg,#ffe1a6 0%,var(--orange-hi) 32%,var(--orange) 66%,#d15e08 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
-    filter:drop-shadow(0 6px 10px rgba(0,0,0,.28));
-    margin:0;
+    filter:drop-shadow(0 8px 14px rgba(0,0,0,.34));
+    animation:pop-in .7s cubic-bezier(.2,.9,.25,1.3) both;
   }
-  .title{font-weight:900;line-height:1.02;font-size:clamp(26px,6.4vw,52px);margin:6px 0 2px;text-shadow:0 3px 10px rgba(0,0,0,.28)}
-  .rule{height:4px;width:min(560px,86%);margin:12px auto 10px;background:var(--orange);border-radius:4px;opacity:.95}
-  .org{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:clamp(17px,3.6vw,25px);opacity:.98}
-  .org svg{width:26px;height:26px;flex:none}
+  .title{font-family:var(--disp);font-weight:400;letter-spacing:1.5px;line-height:.94;
+    font-size:clamp(30px,7.6vw,60px);margin:4px 0 0;text-shadow:0 4px 14px rgba(0,0,0,.3);
+    animation:rise .6s .12s both}
+  .rule{height:4px;width:min(520px,80%);margin:14px auto 12px;border-radius:4px;
+    background:linear-gradient(90deg,transparent,var(--orange),transparent);animation:rise .6s .18s both}
+  .org{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:clamp(15px,3.6vw,22px);
+    letter-spacing:.3px;opacity:.96;animation:rise .6s .24s both}
+  .org svg{width:23px;height:23px;flex:none}
 
-  /* ---------- INFO CARDS ---------- */
-  .info{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:26px 0 8px}
-  .chip{
-    background:rgba(255,255,255,.06);
-    border:2px solid var(--orange);
-    border-radius:16px;padding:14px 12px;text-align:center;
-    backdrop-filter:blur(3px);
+  /* ---------- SCOREBOARD ---------- */
+  .board{display:grid;grid-template-columns:1fr 1fr 1.7fr;gap:12px;margin:26px 0 10px;animation:rise .6s .3s both}
+  .cell{background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+    border:1px solid var(--line);border-radius:16px;padding:14px 15px;position:relative;overflow:hidden}
+  .cell .lbl{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;font-weight:800;color:var(--orange-hi);margin-bottom:6px}
+  .cell .big{font-family:var(--disp);font-size:clamp(20px,4.4vw,30px);letter-spacing:.5px;line-height:1}
+  .cell .sub{font-size:11px;opacity:.7;margin-top:5px;font-weight:600}
+  .cell.vagas{grid-column:auto}
+  .vagas-top{display:flex;align-items:baseline;gap:8px}
+  .vagas-num{font-family:var(--disp);font-size:clamp(30px,8vw,44px);line-height:.9;color:var(--white)}
+  .vagas-num .of{font-size:.5em;opacity:.6;margin-left:2px}
+  .slots{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .slot{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:12px;
+    border:2px dashed rgba(255,255,255,.28);color:rgba(255,255,255,.4);transition:transform .2s}
+  .slot.on{background:linear-gradient(180deg,var(--orange-hi),var(--orange));border:2px solid transparent;color:#3a1e02;
+    box-shadow:0 4px 10px rgba(246,135,31,.4);animation:slot-pop .4s both}
+  @media(max-width:720px){
+    .board{grid-template-columns:1fr 1fr;gap:10px}
+    .cell.vagas{grid-column:1/-1}
   }
-  .chip .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--orange-light);font-weight:800;margin-bottom:5px}
-  .chip .val{font-size:clamp(15px,2.4vw,19px);font-weight:800;line-height:1.15}
-  .chip .sub{font-size:11px;opacity:.75;margin-top:3px}
-  @media(max-width:720px){.info{grid-template-columns:repeat(2,1fr)}}
 
-  .rules-line{
-    margin:14px 0 4px;text-align:center;font-weight:700;font-size:14px;
-    background:rgba(255,255,255,.05);border:2px solid rgba(246,135,31,.55);
-    border-radius:14px;padding:10px 14px;
-  }
-  .rules-line b{color:var(--orange-light)}
+  .ribbon{margin:12px 0 2px;text-align:center;font-weight:700;font-size:13.5px;line-height:1.5;
+    background:rgba(246,135,31,.12);border:1px solid rgba(246,135,31,.5);border-radius:14px;padding:11px 14px;animation:rise .6s .36s both}
+  .ribbon b{color:var(--orange-hi)}
 
   /* ---------- TEAMS HEADER ---------- */
-  .teams-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:34px 0 14px;flex-wrap:wrap}
-  .teams-head h2{margin:0;font-size:clamp(22px,4.6vw,30px);font-weight:900}
-  .teams-head .count{font-size:14px;font-weight:800;color:var(--orange-light)}
+  .teams-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:30px 0 16px;flex-wrap:wrap}
+  .teams-head h2{font-family:var(--disp);font-weight:400;margin:0;font-size:clamp(24px,5.4vw,34px);letter-spacing:.6px}
+  .teams-head .count{font-size:13.5px;font-weight:800;color:var(--orange-hi);margin-top:3px}
+
   .btn{
-    border:0;cursor:pointer;font-weight:800;font-size:15px;border-radius:999px;padding:11px 20px;
-    background:var(--orange);color:#26160a;box-shadow:0 6px 16px rgba(246,135,31,.4);transition:.15s transform,.15s filter;
+    font-family:var(--ui);border:0;cursor:pointer;font-weight:800;font-size:15px;border-radius:999px;padding:12px 20px;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;
+    background:linear-gradient(180deg,var(--orange-hi),var(--orange));color:#3a1e02;
+    box-shadow:0 8px 18px rgba(246,135,31,.38);transition:transform .12s,filter .15s,box-shadow .15s;
+    -webkit-tap-highlight-color:transparent;touch-action:manipulation;
   }
-  .btn:hover{filter:brightness(1.06)} .btn:active{transform:translateY(1px)}
-  .btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none;filter:none}
-  .btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:2px solid rgba(255,255,255,.35);box-shadow:none}
-  .btn.small{padding:8px 14px;font-size:13px}
+  .btn:hover{filter:brightness(1.05)}
+  .btn:active{transform:scale(.96)}
+  .btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none;filter:saturate(.6)}
+  .btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1.5px solid rgba(255,255,255,.32);box-shadow:none}
+  .btn.small{padding:9px 15px;font-size:13px;min-height:40px}
+  .btn.danger{background:rgba(255,86,86,.16);color:#ffc2c2;border:1.5px solid rgba(255,120,120,.5);box-shadow:none}
   .toolbar{display:flex;gap:10px;flex-wrap:wrap}
 
-  .banner{margin:0 0 16px;background:rgba(246,135,31,.14);border:2px solid var(--orange);border-radius:14px;padding:12px 16px;font-size:14px;font-weight:600}
+  .banner{margin:0 0 16px;background:rgba(246,135,31,.14);border:1px solid var(--orange);border-radius:14px;
+    padding:12px 15px;font-size:13.5px;font-weight:600;line-height:1.45}
 
   /* ---------- TEAM CARDS ---------- */
-  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr;gap:13px}}
   .team{
-    background:linear-gradient(180deg,var(--blue-card),#173a95);
-    border:2px solid rgba(255,255,255,.14);border-radius:var(--radius);
-    padding:18px 18px 16px;box-shadow:var(--shadow);position:relative;
+    background:linear-gradient(180deg,var(--blue-card),var(--blue-card-2));
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px 16px 14px;box-shadow:var(--shadow);position:relative;
+    animation:rise .5s both;
   }
-  .team .num{position:absolute;top:-12px;left:16px;background:var(--orange);color:#26160a;font-weight:900;
-    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;box-shadow:0 4px 10px rgba(0,0,0,.3)}
-  .team h3{margin:4px 0 12px;font-size:20px;font-weight:900;word-break:break-word}
-  .members{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-  .member{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:12px;padding:8px 11px;font-weight:600;font-size:15px}
-  .member .who{flex:1;word-break:break-word}
-  .badge{font-size:10.5px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:999px;flex:none}
-  .badge.girl{background:#ff5fa2;color:#3a0018}
-  .badge.ext{background:#7fd0ff;color:#062a3f}
-  .team .foot{margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;opacity:.85;font-weight:700}
-  .empty{grid-column:1/-1;text-align:center;opacity:.85;padding:36px 14px;font-size:16px;border:2px dashed rgba(255,255,255,.25);border-radius:var(--radius)}
-  .empty .btn{margin-top:14px}
+  .team::before{content:"";position:absolute;inset:0;border-radius:var(--radius);padding:1px;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.22),transparent 40%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  @media(hover:hover){.team{transition:transform .18s,box-shadow .18s}.team:hover{transform:translateY(-4px);box-shadow:0 22px 46px rgba(5,16,52,.55)}}
+  .thead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .num{flex:none;width:34px;height:34px;border-radius:11px;background:linear-gradient(180deg,var(--orange-hi),var(--orange));
+    color:#3a1e02;font-family:var(--disp);font-size:18px;display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.28)}
+  .tname{font-family:var(--disp);font-weight:400;font-size:20px;letter-spacing:.4px;line-height:1;word-break:break-word;flex:1}
+  .cpill{flex:none;font-size:11px;font-weight:800;padding:5px 9px;border-radius:999px;background:rgba(255,255,255,.12);white-space:nowrap}
+  .cpill.full{background:rgba(255,86,86,.22);color:#ffc9c9}
+  .members{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+  .member{display:flex;align-items:center;gap:9px;background:rgba(0,0,0,.16);border-radius:12px;padding:7px 10px;font-weight:600;font-size:14.5px}
+  .avatar{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:11.5px;
+    background:rgba(255,255,255,.1);border:2px solid var(--orange);color:#fff}
+  .avatar.girl{border-color:var(--pink)}
+  .avatar.ext{border-color:var(--cyan2)}
+  .who{flex:1;word-break:break-word}
+  .badge{font-size:9.5px;font-weight:900;letter-spacing:.5px;text-transform:uppercase;padding:3px 7px;border-radius:999px;flex:none}
+  .badge.girl{background:var(--pink);color:#3a0018}
+  .badge.ext{background:var(--cyan2);color:#062a3f}
+  .tfoot{margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:12px;opacity:.85;font-weight:700}
 
-  /* edit controls inside card / modal */
-  .inp{width:100%;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.18);color:#fff;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:600;font-family:inherit}
-  .inp::placeholder{color:rgba(255,255,255,.55)}
-  .inp:focus{outline:none;border-color:var(--orange)}
-  .team.editing h3 input{font-size:17px;font-weight:900}
-  .m-edit{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border-radius:12px;padding:7px 8px}
-  .m-edit .inp{flex:1}
-  .tick{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;user-select:none}
-  .tick input{width:16px;height:16px;accent-color:var(--orange)}
-  .x{border:0;background:rgba(255,90,90,.25);color:#ffcaca;width:28px;height:28px;border-radius:8px;cursor:pointer;font-weight:900;font-size:15px;flex:none}
-  .addm{margin-top:9px}
-  .warn{color:#ffd27a;font-size:11.5px;font-weight:800;margin-top:8px}
+  .empty{grid-column:1/-1;text-align:center;padding:38px 16px;border:1.5px dashed rgba(255,255,255,.24);border-radius:var(--radius);
+    display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(255,255,255,.03)}
+  .empty .ball{font-size:40px;animation:bob 2.4s ease-in-out infinite}
+  .empty p{margin:0;opacity:.85;font-size:15px}
+  .empty .btn{margin-top:10px}
 
-  /* ---------- MODAL ---------- */
-  .modal-bg{position:fixed;inset:0;background:rgba(5,12,38,.72);display:none;place-items:center;padding:18px;z-index:50;backdrop-filter:blur(4px)}
-  .modal-bg.on{display:grid}
-  .modal{background:linear-gradient(180deg,#1c44ad,#122e78);border:2px solid var(--orange);border-radius:20px;padding:24px;max-width:380px;width:100%;box-shadow:var(--shadow);text-align:center;max-height:88vh;overflow:auto}
-  .modal.wide{max-width:460px;text-align:left}
-  .modal h3{margin:0 0 6px;font-size:21px}
-  .modal p{margin:0 0 16px;font-size:14px;opacity:.85}
-  .modal .inp{margin-bottom:0}
-  .modal.center .inp{text-align:center;margin-bottom:12px}
-  .modal .row{display:flex;gap:10px;margin-top:16px}
-  .modal .row .btn{flex:1}
-  .msg{min-height:18px;font-size:13px;font-weight:700;margin-top:2px}
+  /* edit inputs */
+  .inp{width:100%;border:1.5px solid rgba(255,255,255,.24);background:rgba(0,0,0,.22);color:#fff;border-radius:11px;
+    padding:11px 12px;font-size:16px;font-weight:600;font-family:inherit}
+  .inp::placeholder{color:rgba(255,255,255,.5)}
+  .inp:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(246,135,31,.2)}
+  .team.editing .tname-inp{font-family:var(--disp);font-weight:400;font-size:18px}
+  .m-edit{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.18);border-radius:12px;padding:7px 8px}
+  .m-edit .inp{flex:1;padding:9px 10px}
+  .tick{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;user-select:none;
+    padding:6px 8px;border-radius:9px;background:rgba(255,255,255,.06)}
+  .tick input{width:17px;height:17px;accent-color:var(--orange);margin:0}
+  .tick.on{background:rgba(246,135,31,.2)}
+  .x{flex:none;border:0;background:rgba(255,86,86,.22);color:#ffcaca;width:32px;height:32px;border-radius:9px;cursor:pointer;font-weight:900;font-size:16px}
+  .addm{margin-top:10px}
+  .warn{color:#ffd792;font-size:11.5px;font-weight:800;margin-top:9px;line-height:1.4}
+
+  /* ---------- MODAL / SHEET ---------- */
+  .modal-bg{position:fixed;inset:0;background:rgba(5,12,38,.7);display:none;place-items:center;padding:18px;z-index:60;backdrop-filter:blur(5px)}
+  .modal-bg.on{display:grid;animation:fade .2s both}
+  .modal{background:linear-gradient(180deg,#20499f,#122e78);border:1px solid var(--orange);border-radius:22px;
+    padding:22px;max-width:440px;width:100%;box-shadow:var(--shadow);max-height:90vh;overflow:auto;animation:pop .22s both}
+  .modal.center{text-align:center;max-width:390px}
+  .sheet-handle{display:none}
+  .modal h3{font-family:var(--disp);font-weight:400;letter-spacing:.5px;margin:0 0 6px;font-size:24px}
+  .modal p{margin:0 0 14px;font-size:14px;opacity:.85;line-height:1.45}
+  .modal .hint{font-size:12.5px;opacity:.8;margin:0 0 14px;line-height:1.45}
+  .modal.center .inp{text-align:center;margin-bottom:10px}
+  .fieldlbl{font-size:11px;font-weight:800;letter-spacing:1px;opacity:.75;margin:16px 0 8px}
+  .row{display:flex;gap:10px;margin-top:18px}
+  .row .btn{flex:1}
+  .msg{min-height:18px;font-size:13px;font-weight:700;margin-top:8px}
   .msg.err{color:#ff9d9d}
-  .footer{text-align:center;margin-top:46px;font-size:12.5px;opacity:.6}
-  .createHint{font-size:12.5px;opacity:.8;margin:2px 0 12px}
+
+  .footer{text-align:center;margin-top:30px;font-size:12px;opacity:.55;line-height:1.5}
 
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:#0f7a3a;color:#fff;
-    padding:12px 20px;border-radius:999px;font-weight:800;box-shadow:var(--shadow);opacity:0;transition:.28s;z-index:60;pointer-events:none;font-size:14px}
+    padding:13px 22px;border-radius:999px;font-weight:800;box-shadow:var(--shadow);opacity:0;transition:.3s;z-index:80;pointer-events:none;font-size:14px;max-width:90vw;text-align:center}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
   .toast.bad{background:#b3261e}
+
+  .confetti{position:fixed;top:0;left:0;font-size:18px;z-index:70;pointer-events:none;will-change:transform,opacity}
+
+  /* ---------- MOBILE: sticky action bar + bottom sheets ---------- */
+  @media(max-width:720px){
+    .wrap{padding-bottom:92px}
+    .toolbar{position:fixed;left:0;right:0;bottom:0;z-index:50;gap:10px;
+      background:linear-gradient(180deg,rgba(13,39,101,.4),rgba(13,39,101,.96));
+      backdrop-filter:blur(10px);border-top:1px solid rgba(255,255,255,.12);
+      padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+    .toolbar .btn{flex:1}
+    .teams-head{margin-bottom:14px}
+
+    .modal-bg{place-items:end center;padding:0}
+    .modal{max-width:none;width:100%;border-radius:24px 24px 0 0;max-height:92vh;
+      padding:14px 18px calc(20px + env(safe-area-inset-bottom));animation:sheet .3s cubic-bezier(.2,.8,.2,1) both}
+    .modal.center{max-width:none}
+    .sheet-handle{display:block;width:44px;height:5px;border-radius:5px;background:rgba(255,255,255,.35);margin:2px auto 14px}
+  }
+
+  @keyframes pop-in{0%{opacity:0;transform:translateY(16px) scale(.9)}100%{opacity:1;transform:none}}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  @keyframes pop{from{opacity:0;transform:scale(.94) translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes sheet{from{transform:translateY(100%)}to{transform:none}}
+  @keyframes slot-pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-8px) rotate(6deg)}}
+
+  @media(prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
 </style>
 </head>
 <body>
@@ -147,15 +226,18 @@
     </div>
   </header>
 
-  <section class="info">
-    <div class="chip"><div class="lbl">Data</div><div class="val">15/11 ou 29/11</div><div class="sub">à confirmar</div></div>
-    <div class="chip"><div class="lbl">Horário</div><div class="val">13h às 20h</div></div>
-    <div class="chip"><div class="lbl">Vagas</div><div class="val" id="vagas">– / 10</div><div class="sub">times</div></div>
-    <div class="chip"><div class="lbl">Formato</div><div class="val">até 6 por time</div></div>
+  <section class="board">
+    <div class="cell"><div class="lbl">Data</div><div class="big">15/11 · 29/11</div><div class="sub">a confirmar</div></div>
+    <div class="cell"><div class="lbl">Horário</div><div class="big">13h — 20h</div><div class="sub">sábado</div></div>
+    <div class="cell vagas">
+      <div class="lbl">Vagas preenchidas</div>
+      <div class="vagas-top"><div class="vagas-num"><span id="vagasFilled">0</span><span class="of">/10</span></div></div>
+      <div class="slots" id="slots"></div>
+    </div>
   </section>
 
-  <div class="rules-line">
-    Cada time tem até <b>6 integrantes</b> — <b>1 menina obrigatória</b> e até <b>2 participantes externos</b>.
+  <div class="ribbon">
+    Time de até <b>6 integrantes</b> · <b>1 menina obrigatória</b> · até <b>2 participantes externos</b>
   </div>
 
   <div class="teams-head">
@@ -169,28 +251,32 @@
   <div id="bannerSlot"></div>
   <div class="grid" id="grid"></div>
 
-  <div class="footer">VNL Tijuquinho · Organizações Tabajara · qualquer um inscreve seu time · edição só pelos capitães</div>
+  <div class="footer">VNL Tijuquinho · Organizações Tabajara<br>Qualquer um inscreve seu time — editar e excluir é só pelos capitães.</div>
 </div>
 
-<!-- CREATE modal (public) -->
+<!-- CREATE sheet (public) -->
 <div class="modal-bg" id="createModal">
-  <div class="modal wide">
+  <div class="modal">
+    <div class="sheet-handle"></div>
     <h3>Inscrever um time</h3>
-    <div class="createHint">Qualquer pessoa pode inscrever um time. Depois, só os capitães editam ou removem.</div>
-    <div id="createBody"></div>
-    <div class="msg" id="createMsg"></div>
+    <div class="hint">Livre para todos. Depois, só os capitães editam ou removem o time.</div>
+    <input class="inp" id="ctName" placeholder="Nome do time" autocomplete="off" />
+    <div class="fieldlbl">INTEGRANTES (ATÉ 6)</div>
+    <div id="ctMembers"></div>
+    <div class="msg" id="ctMsg"></div>
     <div class="row">
-      <button class="btn ghost" id="createCancel">Cancelar</button>
-      <button class="btn" id="createOk">Inscrever time</button>
+      <button class="btn ghost" id="ctCancel">Cancelar</button>
+      <button class="btn" id="ctOk">Inscrever time</button>
     </div>
   </div>
 </div>
 
-<!-- PASSWORD modal (captains) -->
+<!-- PASSWORD sheet (captains) -->
 <div class="modal-bg" id="pwModal">
   <div class="modal center">
-    <h3>Senha dos capitães</h3>
-    <p>Editar e excluir times é só para capitães. Digite a senha compartilhada.</p>
+    <div class="sheet-handle"></div>
+    <h3>Área dos capitães</h3>
+    <p>Editar e excluir times pede a senha compartilhada entre os capitães.</p>
     <input class="inp" id="pwInput" type="password" placeholder="senha" autocomplete="off" />
     <div class="msg" id="pwMsg"></div>
     <div class="row">
@@ -203,297 +289,283 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API = '/api/teams';
-let state = { teams: [], configured: true, editing: false, password: '' };
-let newTeam = null;
+const API='/api/teams';
+let state={teams:[],configured:true,editing:false,password:''};
+let newTeam=null;
 
-const $ = (s, r=document) => r.querySelector(s);
-const el = (t, c) => { const e=document.createElement(t); if(c) e.className=c; return e; };
-const esc = s => (s??'').toString();
+const $=(s,r=document)=>r.querySelector(s);
+const el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
+const esc=s=>(s??'').toString();
+const initials=n=>{const p=esc(n).trim().split(/\s+/);return ((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||'?';};
 
-function toast(msg, bad){
-  const t=$('#toast'); t.textContent=msg; t.className='toast on'+(bad?' bad':'');
-  setTimeout(()=>t.className='toast'+(bad?' bad':''),2800);
+function toast(msg,bad){
+  const t=$('#toast');t.textContent=msg;t.className='toast on'+(bad?' bad':'');
+  clearTimeout(toast._t);toast._t=setTimeout(()=>t.className='toast'+(bad?' bad':''),2900);
+}
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  const emojis=['🏐','🎉','🟠','🔵','✨'];
+  for(let i=0;i<26;i++){
+    const c=el('div','confetti');c.textContent=emojis[i%emojis.length];
+    const x=innerWidth/2,y=innerHeight*0.4;
+    c.style.left=x+'px';c.style.top=y+'px';
+    document.body.appendChild(c);
+    const ang=Math.random()*Math.PI*2,dist=120+Math.random()*220;
+    const dx=Math.cos(ang)*dist,dy=Math.sin(ang)*dist-120;
+    c.animate([{transform:'translate(0,0) rotate(0) scale(1)',opacity:1},
+      {transform:`translate(${dx}px,${dy+420}px) rotate(${(Math.random()*720-360)}deg) scale(.7)`,opacity:0}],
+      {duration:1100+Math.random()*700,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=()=>c.remove();
+  }
 }
 
-function blankMember(){ return { name:'', isGirl:false, isExternal:false }; }
-function blankTeam(){ return { name:'', members:[blankMember()] }; }
+function blankMember(){return{name:'',isGirl:false,isExternal:false};}
+function blankTeam(){return{name:'',members:[blankMember()]};}
 
 async function load(){
   try{
-    const r = await fetch(API,{cache:'no-store'});
-    const j = await r.json();
-    state.teams = Array.isArray(j.teams)? j.teams : [];
-    state.configured = j.configured !== false;
-  }catch(e){ state.teams=[]; }
+    const r=await fetch(API,{cache:'no-store'});const j=await r.json();
+    state.teams=Array.isArray(j.teams)?j.teams:[];
+    state.configured=j.configured!==false;
+  }catch(e){state.teams=[];}
   render();
 }
 
 /* shared editable member row */
-function memberEditRow(m, onRemove, onChange){
+function memberEditRow(m,onRemove,onChange){
   const li=el('li','m-edit');
-  const inp=el('input','inp'); inp.value=m.name||''; inp.placeholder='Nome do integrante';
-  inp.oninput=e=>m.name=e.target.value; li.appendChild(inp);
-
-  const g=el('label','tick'); const gc=el('input'); gc.type='checkbox'; gc.checked=!!m.isGirl;
-  gc.onchange=e=>{ m.isGirl=e.target.checked; onChange && onChange(); }; g.appendChild(gc); g.appendChild(document.createTextNode('♀'));
-  li.appendChild(g);
-
-  const x=el('label','tick'); const xc=el('input'); xc.type='checkbox'; xc.checked=!!m.isExternal;
-  xc.onchange=e=>{ m.isExternal=e.target.checked; onChange && onChange(); }; x.appendChild(xc); x.appendChild(document.createTextNode('ext'));
-  li.appendChild(x);
-
-  const rm=el('button','x'); rm.textContent='×'; rm.title='remover integrante'; rm.onclick=onRemove;
-  li.appendChild(rm);
+  const inp=el('input','inp');inp.value=m.name||'';inp.placeholder='Nome';inp.oninput=e=>m.name=e.target.value;
+  li.appendChild(inp);
+  const mk=(txt,key)=>{
+    const t=el('label','tick'+(m[key]?' on':''));const c=el('input');c.type='checkbox';c.checked=!!m[key];
+    c.onchange=e=>{m[key]=e.target.checked;onChange&&onChange();};
+    t.appendChild(c);t.appendChild(document.createTextNode(txt));return t;
+  };
+  li.appendChild(mk('♀','isGirl'));
+  li.appendChild(mk('ext','isExternal'));
+  const rm=el('button','x');rm.textContent='×';rm.title='remover';rm.onclick=onRemove;li.appendChild(rm);
   return li;
 }
-
 function warnBox(team){
   const real=(team.members||[]).filter(m=>esc(m.name).trim());
-  const girls=real.filter(m=>m.isGirl).length;
-  const ext=real.filter(m=>m.isExternal).length;
-  const warns=[];
-  if(girls<1) warns.push('precisa de ao menos 1 menina ♀');
-  if(ext>2) warns.push('máximo de 2 externos (tem '+ext+')');
-  if(real.length>6) warns.push('máximo de 6 integrantes');
-  if(!warns.length) return null;
-  const w=el('div','warn'); w.textContent='⚠ '+warns.join(' · '); return w;
+  const girls=real.filter(m=>m.isGirl).length,ext=real.filter(m=>m.isExternal).length;
+  const w=[];
+  if(girls<1)w.push('falta 1 menina obrigatória ♀');
+  if(ext>2)w.push('máx. 2 externos (tem '+ext+')');
+  if(real.length>6)w.push('máx. 6 integrantes');
+  if(!w.length)return null;
+  const d=el('div','warn');d.textContent='⚠ '+w.join(' · ');return d;
 }
 
 function render(){
-  const grid=$('#grid'); grid.innerHTML='';
+  const grid=$('#grid');grid.innerHTML='';
   const n=state.teams.length;
-  $('#vagas').textContent = n+' / 10';
-  $('#countLbl').textContent = n===0 ? 'nenhum time ainda' : n+(n===1?' time':' times')+' · '+(10-n)+' vaga'+((10-n)===1?'':'s')+' restante'+((10-n)===1?'':'s');
+  animateVagas(n);
+  renderSlots(n);
+  $('#countLbl').textContent=n===0?'nenhum time ainda':n+(n===1?' time':' times')+' · '+(10-n)+' vaga'+((10-n)===1?'':'s')+' restante'+((10-n)===1?'':'s');
+  if(!state.editing)resetToolbar();
 
-  if(!state.editing) resetToolbar();
-
-  const bs=$('#bannerSlot'); bs.innerHTML='';
+  const bs=$('#bannerSlot');bs.innerHTML='';
   if(!state.configured){
     const b=el('div','banner');
-    b.innerHTML='⚙️ O armazenamento compartilhado ainda está sendo ativado. Você pode montar os times, mas o salvamento só grava depois que o armazenamento estiver ligado.';
+    b.innerHTML='⚙️ O armazenamento compartilhado ainda está sendo ativado. Dá pra montar os times, mas o salvamento só grava depois que ele estiver ligado.';
     bs.appendChild(b);
   }
 
-  if(!state.editing && n===0){
+  if(!state.editing&&n===0){
     const e=el('div','empty');
-    e.innerHTML='Ainda não há times inscritos.<br>Seja o primeiro!';
-    const b=el('button','btn'); b.textContent='＋ Criar time'; b.onclick=openCreate;
-    e.appendChild(b);
-    grid.appendChild(e); return;
+    const ball=el('div','ball');ball.textContent='🏐';
+    const p=el('p');p.innerHTML='Ainda não há times inscritos.<br>Seja o primeiro a entrar em quadra!';
+    const b=el('button','btn');b.innerHTML='＋ Criar meu time';b.onclick=openCreate;
+    e.appendChild(ball);e.appendChild(p);e.appendChild(b);grid.appendChild(e);return;
   }
 
   state.teams.forEach((team,ti)=>{
-    grid.appendChild(state.editing ? teamEditCard(team,ti) : teamViewCard(team,ti));
+    const card=state.editing?teamEditCard(team,ti):teamViewCard(team,ti);
+    card.style.animationDelay=(ti*0.05)+'s';
+    grid.appendChild(card);
   });
 
   if(state.editing){
     const add=el('div','empty');
-    if(state.teams.length>=10){ add.textContent='Máximo de 10 times atingido.'; }
-    else {
-      const b=el('button','btn'); b.textContent='＋ Adicionar time';
-      b.onclick=()=>{ state.teams.push(blankTeam()); render(); };
-      add.appendChild(b);
-    }
+    if(state.teams.length>=10){const p=el('p');p.textContent='Máximo de 10 times atingido.';add.appendChild(p);}
+    else{const b=el('button','btn');b.innerHTML='＋ Adicionar time';b.onclick=()=>{state.teams.push(blankTeam());render();};add.appendChild(b);}
     grid.appendChild(add);
+  }
+}
+
+let vagasShown=0;
+function animateVagas(target){
+  const node=$('#vagasFilled');
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches){node.textContent=target;vagasShown=target;return;}
+  const from=vagasShown,steps=Math.abs(target-from);if(steps===0){node.textContent=target;return;}
+  let i=0;const dir=target>from?1:-1;const iv=setInterval(()=>{i++;node.textContent=from+dir*i;if(i>=steps){clearInterval(iv);}},60);
+  vagasShown=target;
+}
+function renderSlots(n){
+  const box=$('#slots');box.innerHTML='';
+  for(let i=0;i<10;i++){
+    const s=el('div','slot'+(i<n?' on':''));s.textContent=i<n?(i+1):'';
+    if(i<n)s.style.animationDelay=(i*0.04)+'s';
+    box.appendChild(s);
   }
 }
 
 function teamViewCard(team,ti){
   const c=el('div','team');
-  const num=el('div','num'); num.textContent=ti+1; c.appendChild(num);
-  const h=el('h3'); h.textContent=team.name||('Time '+(ti+1)); c.appendChild(h);
+  const head=el('div','thead');
+  const num=el('div','num');num.textContent=ti+1;head.appendChild(num);
+  const nm=el('div','tname');nm.textContent=team.name||('Time '+(ti+1));head.appendChild(nm);
+  const real=(team.members||[]).filter(m=>esc(m.name).trim());
+  const cp=el('div','cpill'+(real.length>=6?' full':''));cp.textContent=real.length+'/6';head.appendChild(cp);
+  c.appendChild(head);
+
   const ul=el('ul','members');
-  (team.members||[]).forEach(m=>{
-    if(!m || !esc(m.name).trim()) return;
+  real.forEach(m=>{
     const li=el('li','member');
-    const who=el('span','who'); who.textContent=m.name; li.appendChild(who);
-    if(m.isGirl){ const b=el('span','badge girl'); b.textContent='♀ menina'; li.appendChild(b); }
-    if(m.isExternal){ const b=el('span','badge ext'); b.textContent='externo'; li.appendChild(b); }
+    const av=el('div','avatar'+(m.isGirl?' girl':m.isExternal?' ext':''));av.textContent=initials(m.name);li.appendChild(av);
+    const who=el('span','who');who.textContent=m.name;li.appendChild(who);
+    if(m.isGirl){const b=el('span','badge girl');b.textContent='♀';li.appendChild(b);}
+    if(m.isExternal){const b=el('span','badge ext');b.textContent='ext';li.appendChild(b);}
     ul.appendChild(li);
   });
+  if(!real.length){const li=el('li','member');li.style.opacity='.6';li.textContent='sem integrantes ainda';ul.appendChild(li);}
   c.appendChild(ul);
-  const foot=el('div','foot');
-  const real=(team.members||[]).filter(m=>esc(m.name).trim());
-  const girls=real.filter(m=>m.isGirl).length;
-  const ext=real.filter(m=>m.isExternal).length;
-  foot.innerHTML='<span>'+real.length+'/6 integrantes</span><span>'+girls+' ♀ · '+ext+' externo'+(ext===1?'':'s')+'</span>';
+
+  const foot=el('div','tfoot');
+  const girls=real.filter(m=>m.isGirl).length,ext=real.filter(m=>m.isExternal).length;
+  foot.innerHTML='<span>'+girls+' menina'+(girls===1?'':'s')+' ♀</span><span>'+ext+' externo'+(ext===1?'':'s')+'</span>';
   c.appendChild(foot);
   return c;
 }
 
 function teamEditCard(team,ti){
   const c=el('div','team editing');
-  const num=el('div','num'); num.textContent=ti+1; c.appendChild(num);
-
-  const h=el('h3');
-  const tn=el('input','inp'); tn.value=team.name||''; tn.placeholder='Nome do time';
-  tn.oninput=e=>team.name=e.target.value;
-  h.appendChild(tn); c.appendChild(h);
+  const head=el('div','thead');
+  const num=el('div','num');num.textContent=ti+1;head.appendChild(num);
+  const tn=el('input','inp tname-inp');tn.value=team.name||'';tn.placeholder='Nome do time';tn.oninput=e=>team.name=e.target.value;
+  head.appendChild(tn);c.appendChild(head);
 
   const ul=el('ul','members');
   (team.members||[]).forEach((m,mi)=>{
     ul.appendChild(memberEditRow(m,
-      ()=>{ team.members.splice(mi,1); if(team.members.length===0) team.members.push(blankMember()); render(); },
-      render));
+      ()=>{team.members.splice(mi,1);if(!team.members.length)team.members.push(blankMember());render();},render));
   });
   c.appendChild(ul);
 
   if((team.members||[]).length<6){
-    const am=el('button','btn ghost small addm'); am.textContent='＋ integrante';
-    am.onclick=()=>{ team.members.push(blankMember()); render(); };
-    c.appendChild(am);
+    const am=el('button','btn ghost small addm');am.innerHTML='＋ integrante';
+    am.onclick=()=>{team.members.push(blankMember());render();};c.appendChild(am);
   }
+  const w=warnBox(team);if(w)c.appendChild(w);
 
-  const w=warnBox(team); if(w) c.appendChild(w);
-
-  const foot=el('div','foot'); foot.style.marginTop='12px';
-  const del=el('button','btn ghost small'); del.textContent='🗑 Remover time';
-  del.onclick=()=>{ if(confirm('Remover o time "'+(team.name||('Time '+(ti+1)))+'"?')){ state.teams.splice(ti,1); render(); } };
-  foot.appendChild(el('span')); foot.appendChild(del);
-  c.appendChild(foot);
+  const foot=el('div','tfoot');foot.style.marginTop='12px';
+  const del=el('button','btn danger small');del.innerHTML='🗑 Remover time';
+  del.onclick=()=>{if(confirm('Remover o time "'+(team.name||('Time '+(ti+1)))+'"?')){state.teams.splice(ti,1);render();}};
+  foot.appendChild(el('span'));foot.appendChild(del);c.appendChild(foot);
   return c;
 }
 
 /* ---------- CREATE (public) ---------- */
 function openCreate(){
-  newTeam = blankTeam();
-  $('#createMsg').textContent=''; $('#createMsg').className='msg';
-  renderCreate();
+  newTeam=blankTeam();
+  $('#ctName').value='';$('#ctMsg').textContent='';$('#ctMsg').className='msg';
+  renderCtMembers();
   $('#createModal').classList.add('on');
-  setTimeout(()=>{ const i=$('#createBody .inp'); if(i) i.focus(); },60);
+  setTimeout(()=>$('#ctName').focus(),120);
 }
-function closeCreate(){ $('#createModal').classList.remove('on'); }
-function renderCreate(){
-  const box=$('#createBody'); box.innerHTML='';
-  const nameInp=el('input','inp'); nameInp.placeholder='Nome do time'; nameInp.value=newTeam.name;
-  nameInp.oninput=e=>newTeam.name=e.target.value; box.appendChild(nameInp);
-
-  const lbl=el('div'); lbl.style.cssText='font-size:12px;font-weight:800;opacity:.8;margin:14px 0 8px;letter-spacing:.4px'; lbl.textContent='INTEGRANTES (até 6)';
-  box.appendChild(lbl);
-
+function closeCreate(){$('#createModal').classList.remove('on');}
+function renderCtMembers(){
+  const box=$('#ctMembers');box.innerHTML='';
   const ul=el('ul','members');
   newTeam.members.forEach((m,mi)=>{
     ul.appendChild(memberEditRow(m,
-      ()=>{ newTeam.members.splice(mi,1); if(newTeam.members.length===0) newTeam.members.push(blankMember()); renderCreate(); },
-      renderCreate));
+      ()=>{newTeam.members.splice(mi,1);if(!newTeam.members.length)newTeam.members.push(blankMember());renderCtMembers();},renderCtMembers));
   });
   box.appendChild(ul);
-
   if(newTeam.members.length<6){
-    const am=el('button','btn ghost small addm'); am.textContent='＋ integrante';
-    am.onclick=()=>{ newTeam.members.push(blankMember()); renderCreate(); };
-    box.appendChild(am);
+    const am=el('button','btn ghost small addm');am.innerHTML='＋ integrante';
+    am.onclick=()=>{newTeam.members.push(blankMember());renderCtMembers();};box.appendChild(am);
   }
-  const w=warnBox(newTeam); if(w) box.appendChild(w);
+  const w=warnBox(newTeam);if(w)box.appendChild(w);
 }
 async function submitCreate(){
-  const t={
-    name:(newTeam.name||'').trim(),
-    members:(newTeam.members||[]).filter(m=>esc(m.name).trim()).map(m=>({name:m.name.trim(),isGirl:!!m.isGirl,isExternal:!!m.isExternal}))
-  };
-  const setErr=x=>{ $('#createMsg').textContent=x; $('#createMsg').className='msg err'; };
-  if(!t.name){ setErr('Dê um nome ao time.'); return; }
-  if(!t.members.length){ setErr('Adicione ao menos 1 integrante.'); return; }
-  if(t.members.length>6){ setErr('Máximo de 6 integrantes.'); return; }
-  if(t.members.filter(m=>m.isExternal).length>2){ setErr('Máximo de 2 externos.'); return; }
-  if(!t.members.some(m=>m.isGirl)){
-    if(!confirm('Este time está sem a menina obrigatória (♀). Inscrever assim mesmo?')) return;
-  }
-  const btn=$('#createOk'); btn.disabled=true; btn.textContent='Inscrevendo...';
+  newTeam.name=$('#ctName').value;
+  const t={name:(newTeam.name||'').trim(),
+    members:(newTeam.members||[]).filter(m=>esc(m.name).trim()).map(m=>({name:m.name.trim(),isGirl:!!m.isGirl,isExternal:!!m.isExternal}))};
+  const setErr=x=>{$('#ctMsg').textContent=x;$('#ctMsg').className='msg err';};
+  if(!t.name)return setErr('Dê um nome ao time.');
+  if(!t.members.length)return setErr('Adicione ao menos 1 integrante.');
+  if(t.members.length>6)return setErr('Máximo de 6 integrantes.');
+  if(t.members.filter(m=>m.isExternal).length>2)return setErr('Máximo de 2 externos.');
+  if(!t.members.some(m=>m.isGirl)){if(!confirm('Time sem a menina obrigatória (♀). Inscrever assim mesmo?'))return;}
+  const btn=$('#ctOk');btn.disabled=true;btn.textContent='Inscrevendo...';
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'create',team:t})});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create',team:t})});
     const j=await r.json();
-    if(r.ok && j.ok){
-      state.teams=j.teams||state.teams; closeCreate(); render(); toast('Time inscrito! 🏐');
-    }else{
-      setErr(j.message||'Não foi possível inscrever.');
-    }
-  }catch(e){ setErr('Erro de conexão.'); }
-  btn.disabled=false; btn.textContent='Inscrever time';
+    if(r.ok&&j.ok){state.teams=j.teams||state.teams;closeCreate();render();toast('Time inscrito! 🏐');confetti();}
+    else setErr(j.message||'Não foi possível inscrever.');
+  }catch(e){setErr('Erro de conexão.');}
+  btn.disabled=false;btn.textContent='Inscrever time';
 }
 
 /* ---------- EDIT (captains) ---------- */
 function resetToolbar(){
-  const tb=$('#toolbar'); tb.innerHTML='';
-  const create=el('button','btn'); create.textContent='＋ Criar time'; create.onclick=openCreate;
-  const edit=el('button','btn ghost'); edit.textContent='🔒 Editar (capitães)'; edit.onclick=openPw;
-  tb.appendChild(create); tb.appendChild(edit);
+  const tb=$('#toolbar');tb.innerHTML='';
+  const create=el('button','btn');create.innerHTML='＋ Criar time';create.onclick=openCreate;
+  const edit=el('button','btn ghost');edit.innerHTML='🔒 Capitães';edit.onclick=openPw;
+  tb.appendChild(create);tb.appendChild(edit);
 }
 function enterEdit(){
   state.editing=true;
-  const tb=$('#toolbar'); tb.innerHTML='';
-  const save=el('button','btn'); save.id='saveBtn'; save.textContent='💾 Salvar';
-  save.onclick=saveTeams;
-  const cancel=el('button','btn ghost'); cancel.textContent='Cancelar';
-  cancel.onclick=()=>{ state.editing=false; state.password=''; load(); };
-  tb.appendChild(save); tb.appendChild(cancel);
-  render();
+  const tb=$('#toolbar');tb.innerHTML='';
+  const save=el('button','btn');save.id='saveBtn';save.innerHTML='💾 Salvar';save.onclick=saveTeams;
+  const cancel=el('button','btn ghost');cancel.textContent='Cancelar';cancel.onclick=()=>{state.editing=false;state.password='';load();};
+  tb.appendChild(save);tb.appendChild(cancel);render();
 }
-
 async function saveTeams(){
-  const cleaned = state.teams.map(t=>({
-    name:(t.name||'').trim(),
+  const cleaned=state.teams.map(t=>({name:(t.name||'').trim(),
     members:(t.members||[]).filter(m=>esc(m.name).trim()).map(m=>({name:m.name.trim(),isGirl:!!m.isGirl,isExternal:!!m.isExternal}))
-  })).filter(t=>t.name || t.members.length);
-
-  if(cleaned.length>10){ toast('Máximo de 10 times.',true); return; }
+  })).filter(t=>t.name||t.members.length);
+  if(cleaned.length>10)return toast('Máximo de 10 times.',true);
   for(const t of cleaned){
-    if(!t.name){ toast('Todo time precisa de um nome.',true); return; }
-    if(t.members.length>6){ toast('"'+t.name+'": máx. 6 integrantes.',true); return; }
-    if(t.members.filter(m=>m.isExternal).length>2){ toast('"'+t.name+'": máx. 2 externos.',true); return; }
+    if(!t.name)return toast('Todo time precisa de um nome.',true);
+    if(t.members.length>6)return toast('"'+t.name+'": máx. 6 integrantes.',true);
+    if(t.members.filter(m=>m.isExternal).length>2)return toast('"'+t.name+'": máx. 2 externos.',true);
   }
-  const missingGirl=cleaned.filter(t=>t.members.length && !t.members.some(m=>m.isGirl)).map(t=>t.name);
-  if(missingGirl.length){
-    if(!confirm('Estes times estão sem menina obrigatória:\n\n• '+missingGirl.join('\n• ')+'\n\nSalvar assim mesmo?')) return;
-  }
-
-  const btn=$('#saveBtn'); if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  const missing=cleaned.filter(t=>t.members.length&&!t.members.some(m=>m.isGirl)).map(t=>t.name);
+  if(missing.length&&!confirm('Sem menina obrigatória:\n\n• '+missing.join('\n• ')+'\n\nSalvar assim mesmo?'))return;
+  const btn=$('#saveBtn');if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({password:state.password,teams:cleaned})});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:state.password,teams:cleaned})});
     const j=await r.json();
-    if(r.ok && j.ok){
-      state.teams=j.teams||cleaned; state.editing=false; state.password='';
-      render(); toast('Times salvos! ✅');
-    }else{
-      toast(j.message||'Não foi possível salvar.',true);
-      if(btn){btn.disabled=false;btn.textContent='💾 Salvar';}
-    }
-  }catch(e){
-    toast('Erro de conexão ao salvar.',true);
-    if(btn){btn.disabled=false;btn.textContent='💾 Salvar';}
-  }
+    if(r.ok&&j.ok){state.teams=j.teams||cleaned;state.editing=false;state.password='';render();toast('Times salvos! ✅');}
+    else{toast(j.message||'Não foi possível salvar.',true);if(btn){btn.disabled=false;btn.innerHTML='💾 Salvar';}}
+  }catch(e){toast('Erro de conexão ao salvar.',true);if(btn){btn.disabled=false;btn.innerHTML='💾 Salvar';}}
 }
 
-/* ---------- password modal ---------- */
-function openPw(){
-  $('#pwInput').value=''; $('#pwMsg').textContent=''; $('#pwMsg').className='msg';
-  $('#pwModal').classList.add('on'); setTimeout(()=>$('#pwInput').focus(),60);
-}
-function closePw(){ $('#pwModal').classList.remove('on'); }
+/* ---------- password ---------- */
+function openPw(){$('#pwInput').value='';$('#pwMsg').textContent='';$('#pwMsg').className='msg';$('#pwModal').classList.add('on');setTimeout(()=>$('#pwInput').focus(),120);}
+function closePw(){$('#pwModal').classList.remove('on');}
 async function tryPw(){
   const pw=$('#pwInput').value;
-  if(!pw){ $('#pwMsg').textContent='Digite a senha.'; $('#pwMsg').className='msg err'; return; }
-  const ok=$('#pwOk'); ok.disabled=true; ok.textContent='...';
+  if(!pw){$('#pwMsg').textContent='Digite a senha.';$('#pwMsg').className='msg err';return;}
+  const ok=$('#pwOk');ok.disabled=true;ok.textContent='...';
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({password:pw,teams:state.teams})});
-    if(r.status===401){ $('#pwMsg').textContent='Senha incorreta.'; $('#pwMsg').className='msg err'; }
-    else { state.password=pw; closePw(); enterEdit();
-           if(r.status===503) toast('Senha ok. (armazenamento em ativação)'); }
-  }catch(e){ $('#pwMsg').textContent='Erro de conexão.'; $('#pwMsg').className='msg err'; }
-  ok.disabled=false; ok.textContent='Entrar';
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw,teams:state.teams})});
+    if(r.status===401){$('#pwMsg').textContent='Senha incorreta.';$('#pwMsg').className='msg err';}
+    else{state.password=pw;closePw();enterEdit();if(r.status===503)toast('Senha ok. (armazenamento em ativação)');}
+  }catch(e){$('#pwMsg').textContent='Erro de conexão.';$('#pwMsg').className='msg err';}
+  ok.disabled=false;ok.textContent='Entrar';
 }
 
-$('#createCancel').onclick=closeCreate;
-$('#createOk').onclick=submitCreate;
+$('#ctCancel').onclick=closeCreate;
+$('#ctOk').onclick=submitCreate;
 $('#pwCancel').onclick=closePw;
 $('#pwOk').onclick=tryPw;
-$('#pwInput').addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
-$('#pwModal').addEventListener('click',e=>{ if(e.target.id==='pwModal') closePw(); });
-$('#createModal').addEventListener('click',e=>{ if(e.target.id==='createModal') closeCreate(); });
+$('#pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryPw();});
+$('#ctName').addEventListener('keydown',e=>{if(e.key==='Enter')submitCreate();});
+$('#pwModal').addEventListener('click',e=>{if(e.target.id==='pwModal')closePw();});
+$('#createModal').addEventListener('click',e=>{if(e.target.id==='createModal')closeCreate();});
 
 resetToolbar();
 load();
