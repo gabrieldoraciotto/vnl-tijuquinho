@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VNL — Tijuquinho Volleyball Nations League</title>
+<style>
+  :root{
+    --blue:#173a95;
+    --blue-deep:#0f2a6e;
+    --blue-card:#1c44ad;
+    --orange:#f6871f;
+    --orange-light:#ffab3d;
+    --white:#ffffff;
+    --ink:#0d1f52;
+    --radius:22px;
+    --shadow:0 14px 34px rgba(6,18,56,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    color:var(--white);
+    background:radial-gradient(120% 90% at 50% -10%, #2450c0 0%, var(--blue) 45%, var(--blue-deep) 100%) fixed;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:26px 18px 80px}
+
+  /* ---------- HERO ---------- */
+  .hero{text-align:center;padding:14px 0 6px}
+  .vnl{
+    font-weight:900;letter-spacing:2px;line-height:.82;
+    font-size:clamp(74px,20vw,168px);
+    background:linear-gradient(180deg,#ffd27a 0%,var(--orange-light) 30%,var(--orange) 70%,#d8620a 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,.28));
+    margin:0;
+  }
+  .title{font-weight:900;line-height:1.02;font-size:clamp(26px,6.4vw,52px);margin:6px 0 2px;text-shadow:0 3px 10px rgba(0,0,0,.28)}
+  .rule{height:4px;width:min(560px,86%);margin:12px auto 10px;background:var(--orange);border-radius:4px;opacity:.95}
+  .org{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:clamp(17px,3.6vw,25px);opacity:.98}
+  .org svg{width:26px;height:26px;flex:none}
+
+  /* ---------- INFO CARDS ---------- */
+  .info{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:26px 0 8px}
+  .chip{
+    background:rgba(255,255,255,.06);
+    border:2px solid var(--orange);
+    border-radius:16px;padding:14px 12px;text-align:center;
+    backdrop-filter:blur(3px);
+  }
+  .chip .lbl{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--orange-light);font-weight:800;margin-bottom:5px}
+  .chip .val{font-size:clamp(15px,2.4vw,19px);font-weight:800;line-height:1.15}
+  .chip .sub{font-size:11px;opacity:.75;margin-top:3px}
+  @media(max-width:720px){.info{grid-template-columns:repeat(2,1fr)}}
+
+  .rules-line{
+    margin:14px 0 4px;text-align:center;font-weight:700;font-size:14px;
+    background:rgba(255,255,255,.05);border:2px solid rgba(246,135,31,.55);
+    border-radius:14px;padding:10px 14px;
+  }
+  .rules-line b{color:var(--orange-light)}
+
+  /* ---------- TEAMS HEADER ---------- */
+  .teams-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:34px 0 14px;flex-wrap:wrap}
+  .teams-head h2{margin:0;font-size:clamp(22px,4.6vw,30px);font-weight:900}
+  .teams-head .count{font-size:14px;font-weight:800;color:var(--orange-light)}
+  .btn{
+    border:0;cursor:pointer;font-weight:800;font-size:15px;border-radius:999px;padding:11px 20px;
+    background:var(--orange);color:#26160a;box-shadow:0 6px 16px rgba(246,135,31,.4);transition:.15s transform,.15s filter;
+  }
+  .btn:hover{filter:brightness(1.06)} .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none;filter:none}
+  .btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:2px solid rgba(255,255,255,.35);box-shadow:none}
+  .btn.small{padding:8px 14px;font-size:13px}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap}
+
+  .banner{margin:0 0 16px;background:rgba(246,135,31,.14);border:2px solid var(--orange);border-radius:14px;padding:12px 16px;font-size:14px;font-weight:600}
+
+  /* ---------- TEAM CARDS ---------- */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .team{
+    background:linear-gradient(180deg,var(--blue-card),#173a95);
+    border:2px solid rgba(255,255,255,.14);border-radius:var(--radius);
+    padding:18px 18px 16px;box-shadow:var(--shadow);position:relative;
+  }
+  .team .num{position:absolute;top:-12px;left:16px;background:var(--orange);color:#26160a;font-weight:900;
+    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:14px;box-shadow:0 4px 10px rgba(0,0,0,.3)}
+  .team h3{margin:4px 0 12px;font-size:20px;font-weight:900;word-break:break-word}
+  .members{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  .member{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:12px;padding:8px 11px;font-weight:600;font-size:15px}
+  .member .who{flex:1;word-break:break-word}
+  .badge{font-size:10.5px;font-weight:900;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:999px;flex:none}
+  .badge.girl{background:#ff5fa2;color:#3a0018}
+  .badge.ext{background:#7fd0ff;color:#062a3f}
+  .team .foot{margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;opacity:.85;font-weight:700}
+  .empty{grid-column:1/-1;text-align:center;opacity:.8;padding:40px 10px;font-size:16px;border:2px dashed rgba(255,255,255,.25);border-radius:var(--radius)}
+
+  /* edit controls inside card */
+  .inp{width:100%;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.18);color:#fff;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:600;font-family:inherit}
+  .inp::placeholder{color:rgba(255,255,255,.55)}
+  .inp:focus{outline:none;border-color:var(--orange)}
+  .team.editing h3 input{font-size:17px;font-weight:900}
+  .m-edit{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.07);border-radius:12px;padding:7px 8px}
+  .m-edit .inp{flex:1}
+  .tick{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer;user-select:none}
+  .tick input{width:16px;height:16px;accent-color:var(--orange)}
+  .x{border:0;background:rgba(255,90,90,.25);color:#ffcaca;width:28px;height:28px;border-radius:8px;cursor:pointer;font-weight:900;font-size:15px;flex:none}
+  .addm{margin-top:9px}
+  .warn{color:#ffd27a;font-size:11.5px;font-weight:800;margin-top:8px}
+
+  /* ---------- MODAL ---------- */
+  .modal-bg{position:fixed;inset:0;background:rgba(5,12,38,.72);display:none;place-items:center;padding:18px;z-index:50;backdrop-filter:blur(4px)}
+  .modal-bg.on{display:grid}
+  .modal{background:linear-gradient(180deg,#1c44ad,#122e78);border:2px solid var(--orange);border-radius:20px;padding:24px;max-width:380px;width:100%;box-shadow:var(--shadow);text-align:center}
+  .modal h3{margin:0 0 6px;font-size:21px}
+  .modal p{margin:0 0 16px;font-size:14px;opacity:.85}
+  .modal .inp{text-align:center;margin-bottom:12px}
+  .modal .row{display:flex;gap:10px}
+  .modal .row .btn{flex:1}
+  .msg{min-height:18px;font-size:13px;font-weight:700;margin-top:2px}
+  .msg.err{color:#ff9d9d}
+  .footer{text-align:center;margin-top:46px;font-size:12.5px;opacity:.6}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:#0f7a3a;color:#fff;
+    padding:12px 20px;border-radius:999px;font-weight:800;box-shadow:var(--shadow);opacity:0;transition:.28s;z-index:60;pointer-events:none;font-size:14px}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.bad{background:#b3261e}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <h1 class="vnl">VNL</h1>
+    <div class="title">Tijuquinho Volleyball<br>Nations League</div>
+    <div class="rule"></div>
+    <div class="org">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5l-8-3Z" stroke="#f6871f" stroke-width="2" stroke-linejoin="round"/></svg>
+      Organizações Tabajara
+    </div>
+  </header>
+
+  <section class="info">
+    <div class="chip"><div class="lbl">Data</div><div class="val">15/11 ou 29/11</div><div class="sub">à confirmar</div></div>
+    <div class="chip"><div class="lbl">Horário</div><div class="val">13h às 20h</div></div>
+    <div class="chip"><div class="lbl">Vagas</div><div class="val" id="vagas">– / 10</div><div class="sub">times</div></div>
+    <div class="chip"><div class="lbl">Formato</div><div class="val">até 6 por time</div></div>
+  </section>
+
+  <div class="rules-line">
+    Cada time tem até <b>6 integrantes</b> — <b>1 menina obrigatória</b> e até <b>2 participantes externos</b>.
+  </div>
+
+  <div class="teams-head">
+    <div>
+      <h2>Times inscritos</h2>
+      <div class="count" id="countLbl"></div>
+    </div>
+    <div class="toolbar" id="toolbar">
+      <button class="btn" id="editBtn">🔒 Editar times</button>
+    </div>
+  </div>
+
+  <div id="bannerSlot"></div>
+  <div class="grid" id="grid"></div>
+
+  <div class="footer">VNL Tijuquinho · Organizações Tabajara · site dos capitães</div>
+</div>
+
+<!-- password modal -->
+<div class="modal-bg" id="pwModal">
+  <div class="modal">
+    <h3>Senha dos capitães</h3>
+    <p>Digite a senha compartilhada para editar os times.</p>
+    <input class="inp" id="pwInput" type="password" placeholder="senha" autocomplete="off" />
+    <div class="msg" id="pwMsg"></div>
+    <div class="row">
+      <button class="btn ghost" id="pwCancel">Cancelar</button>
+      <button class="btn" id="pwOk">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api/teams';
+let state = { teams: [], configured: true, editing: false, password: '' };
+
+const $ = (s, r=document) => r.querySelector(s);
+const el = (t, c) => { const e=document.createElement(t); if(c) e.className=c; return e; };
+const esc = s => (s??'').toString();
+
+function toast(msg, bad){
+  const t=$('#toast'); t.textContent=msg; t.className='toast on'+(bad?' bad':'');
+  setTimeout(()=>t.className='toast'+(bad?' bad':''),2600);
+}
+
+function blankMember(){ return { name:'', isGirl:false, isExternal:false }; }
+function blankTeam(){ return { name:'', members:[blankMember()] }; }
+
+async function load(){
+  try{
+    const r = await fetch(API,{cache:'no-store'});
+    const j = await r.json();
+    state.teams = Array.isArray(j.teams)? j.teams : [];
+    state.configured = j.configured !== false;
+  }catch(e){ state.teams=[]; }
+  render();
+}
+
+function render(){
+  const grid=$('#grid'); grid.innerHTML='';
+  const n=state.teams.length;
+  $('#vagas').textContent = n+' / 10';
+  $('#countLbl').textContent = n===0 ? 'nenhum time ainda' : n+(n===1?' time':' times')+' · '+(10-n)+' vaga'+((10-n)===1?'':'s')+' restante'+((10-n)===1?'':'s');
+
+  // banner if storage not configured
+  const bs=$('#bannerSlot'); bs.innerHTML='';
+  if(!state.configured){
+    const b=el('div','banner');
+    b.innerHTML='⚙️ O armazenamento compartilhado ainda está sendo ativado. Você pode montar os times, mas o salvamento só grava depois que o armazenamento estiver ligado.';
+    bs.appendChild(b);
+  }
+
+  if(!state.editing && n===0){
+    const e=el('div','empty'); e.textContent='Ainda não há times inscritos. Clique em "Editar times" e adicione o primeiro!';
+    grid.appendChild(e); return;
+  }
+
+  state.teams.forEach((team,ti)=>{
+    grid.appendChild(state.editing ? teamEditCard(team,ti) : teamViewCard(team,ti));
+  });
+
+  if(state.editing){
+    const add=el('div','empty');
+    if(state.teams.length>=10){ add.textContent='Máximo de 10 times atingido.'; }
+    else {
+      const b=el('button','btn'); b.textContent='＋ Adicionar time';
+      b.onclick=()=>{ state.teams.push(blankTeam()); render(); };
+      add.appendChild(b);
+    }
+    grid.appendChild(add);
+  }
+}
+
+function teamViewCard(team,ti){
+  const c=el('div','team');
+  const num=el('div','num'); num.textContent=ti+1; c.appendChild(num);
+  const h=el('h3'); h.textContent=team.name||('Time '+(ti+1)); c.appendChild(h);
+  const ul=el('ul','members');
+  (team.members||[]).forEach(m=>{
+    if(!m || !esc(m.name).trim()) return;
+    const li=el('li','member');
+    const who=el('span','who'); who.textContent=m.name; li.appendChild(who);
+    if(m.isGirl){ const b=el('span','badge girl'); b.textContent='♀ menina'; li.appendChild(b); }
+    if(m.isExternal){ const b=el('span','badge ext'); b.textContent='externo'; li.appendChild(b); }
+    ul.appendChild(li);
+  });
+  c.appendChild(ul);
+  const foot=el('div','foot');
+  const real=(team.members||[]).filter(m=>esc(m.name).trim());
+  const girls=real.filter(m=>m.isGirl).length;
+  const ext=real.filter(m=>m.isExternal).length;
+  foot.innerHTML='<span>'+real.length+'/6 integrantes</span><span>'+girls+' ♀ · '+ext+' externo'+(ext===1?'':'s')+'</span>';
+  c.appendChild(foot);
+  return c;
+}
+
+function teamEditCard(team,ti){
+  const c=el('div','team editing');
+  const num=el('div','num'); num.textContent=ti+1; c.appendChild(num);
+
+  const h=el('h3');
+  const tn=el('input','inp'); tn.value=team.name||''; tn.placeholder='Nome do time';
+  tn.oninput=e=>team.name=e.target.value;
+  h.appendChild(tn); c.appendChild(h);
+
+  const ul=el('ul','members');
+  (team.members||[]).forEach((m,mi)=>{
+    const li=el('li','m-edit');
+    const inp=el('input','inp'); inp.value=m.name||''; inp.placeholder='Nome do integrante';
+    inp.oninput=e=>m.name=e.target.value; li.appendChild(inp);
+
+    const g=el('label','tick'); const gc=el('input'); gc.type='checkbox'; gc.checked=!!m.isGirl;
+    gc.onchange=e=>m.isGirl=e.target.checked; g.appendChild(gc); g.appendChild(document.createTextNode('♀'));
+    li.appendChild(g);
+
+    const x=el('label','tick'); const xc=el('input'); xc.type='checkbox'; xc.checked=!!m.isExternal;
+    xc.onchange=e=>m.isExternal=e.target.checked; x.appendChild(xc); x.appendChild(document.createTextNode('ext'));
+    li.appendChild(x);
+
+    const rm=el('button','x'); rm.textContent='×'; rm.title='remover integrante';
+    rm.onclick=()=>{ team.members.splice(mi,1); if(team.members.length===0) team.members.push(blankMember()); render(); };
+    li.appendChild(rm);
+    ul.appendChild(li);
+  });
+  c.appendChild(ul);
+
+  if((team.members||[]).length<6){
+    const am=el('button','btn ghost small addm'); am.textContent='＋ integrante';
+    am.onclick=()=>{ team.members.push(blankMember()); render(); };
+    c.appendChild(am);
+  }
+
+  // validation hints
+  const real=(team.members||[]).filter(m=>esc(m.name).trim());
+  const girls=real.filter(m=>m.isGirl).length;
+  const ext=real.filter(m=>m.isExternal).length;
+  const warns=[];
+  if(girls<1) warns.push('precisa de ao menos 1 menina ♀');
+  if(ext>2) warns.push('máximo de 2 externos (tem '+ext+')');
+  if(real.length>6) warns.push('máximo de 6 integrantes');
+  if(warns.length){ const w=el('div','warn'); w.textContent='⚠ '+warns.join(' · '); c.appendChild(w); }
+
+  const foot=el('div','foot'); foot.style.marginTop='12px';
+  const del=el('button','btn ghost small'); del.textContent='🗑 Remover time';
+  del.onclick=()=>{ if(confirm('Remover o time "'+(team.name||('Time '+(ti+1)))+'"?')){ state.teams.splice(ti,1); render(); } };
+  foot.appendChild(el('span')); foot.appendChild(del);
+  c.appendChild(foot);
+  return c;
+}
+
+/* ---- edit mode enter/exit ---- */
+function enterEdit(){
+  state.editing=true;
+  const tb=$('#toolbar'); tb.innerHTML='';
+  const save=el('button','btn'); save.id='saveBtn'; save.textContent='💾 Salvar';
+  save.onclick=saveTeams;
+  const cancel=el('button','btn ghost'); cancel.textContent='Cancelar';
+  cancel.onclick=()=>{ state.editing=false; state.password=''; resetToolbar(); load(); };
+  tb.appendChild(save); tb.appendChild(cancel);
+  render();
+}
+function resetToolbar(){
+  const tb=$('#toolbar'); tb.innerHTML='';
+  const b=el('button','btn'); b.id='editBtn'; b.textContent='🔒 Editar times';
+  b.onclick=openPw; tb.appendChild(b);
+}
+
+async function saveTeams(){
+  // clean up: drop empty members, keep teams that have a name or a member
+  const cleaned = state.teams.map(t=>({
+    name:(t.name||'').trim(),
+    members:(t.members||[]).filter(m=>esc(m.name).trim()).map(m=>({name:m.name.trim(),isGirl:!!m.isGirl,isExternal:!!m.isExternal}))
+  })).filter(t=>t.name || t.members.length);
+
+  if(cleaned.length>10){ toast('Máximo de 10 times.',true); return; }
+  for(const t of cleaned){
+    if(!t.name){ toast('Todo time precisa de um nome.',true); return; }
+    if(t.members.length>6){ toast('"'+t.name+'": máx. 6 integrantes.',true); return; }
+    if(t.members.filter(m=>m.isExternal).length>2){ toast('"'+t.name+'": máx. 2 externos.',true); return; }
+  }
+  // soft warning for girl rule
+  const missingGirl=cleaned.filter(t=>t.members.length && !t.members.some(m=>m.isGirl)).map(t=>t.name);
+  if(missingGirl.length){
+    if(!confirm('Estes times estão sem menina obrigatória:\n\n• '+missingGirl.join('\n• ')+'\n\nSalvar assim mesmo?')) return;
+  }
+
+  const btn=$('#saveBtn'); if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:state.password,teams:cleaned})});
+    const j=await r.json();
+    if(r.ok && j.ok){
+      state.teams=j.teams||cleaned; state.editing=false; state.password='';
+      resetToolbar(); render(); toast('Times salvos! ✅');
+    }else{
+      toast(j.message||'Não foi possível salvar.',true);
+      if(btn){btn.disabled=false;btn.textContent='💾 Salvar';}
+    }
+  }catch(e){
+    toast('Erro de conexão ao salvar.',true);
+    if(btn){btn.disabled=false;btn.textContent='💾 Salvar';}
+  }
+}
+
+/* ---- password modal ---- */
+function openPw(){
+  $('#pwInput').value=''; $('#pwMsg').textContent=''; $('#pwMsg').className='msg';
+  $('#pwModal').classList.add('on'); setTimeout(()=>$('#pwInput').focus(),60);
+}
+function closePw(){ $('#pwModal').classList.remove('on'); }
+async function tryPw(){
+  const pw=$('#pwInput').value;
+  if(!pw){ $('#pwMsg').textContent='Digite a senha.'; $('#pwMsg').className='msg err'; return; }
+  // validate against server with an empty no-op? We validate on save; do a quick check:
+  const ok=$('#pwOk'); ok.disabled=true; ok.textContent='...';
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:pw,teams:state.teams,check:true})});
+    // If password wrong => 401. If right but storage off => 503 (still means pw ok).
+    if(r.status===401){ $('#pwMsg').textContent='Senha incorreta.'; $('#pwMsg').className='msg err'; }
+    else { state.password=pw; closePw(); enterEdit();
+           if(r.status===503) toast('Senha ok. (armazenamento em ativação)'); }
+  }catch(e){ $('#pwMsg').textContent='Erro de conexão.'; $('#pwMsg').className='msg err'; }
+  ok.disabled=false; ok.textContent='Entrar';
+}
+
+$('#editBtn').onclick=openPw;
+$('#pwCancel').onclick=closePw;
+$('#pwOk').onclick=tryPw;
+$('#pwInput').addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
+$('#pwModal').addEventListener('click',e=>{ if(e.target.id==='pwModal') closePw(); });
+
+load();
+</script>
+</body>
+</html>
