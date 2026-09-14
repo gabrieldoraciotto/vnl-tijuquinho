@@ -96,9 +96,10 @@
   .badge.girl{background:#ff5fa2;color:#3a0018}
   .badge.ext{background:#7fd0ff;color:#062a3f}
   .team .foot{margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;opacity:.85;font-weight:700}
-  .empty{grid-column:1/-1;text-align:center;opacity:.8;padding:40px 10px;font-size:16px;border:2px dashed rgba(255,255,255,.25);border-radius:var(--radius)}
+  .empty{grid-column:1/-1;text-align:center;opacity:.85;padding:36px 14px;font-size:16px;border:2px dashed rgba(255,255,255,.25);border-radius:var(--radius)}
+  .empty .btn{margin-top:14px}
 
-  /* edit controls inside card */
+  /* edit controls inside card / modal */
   .inp{width:100%;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.18);color:#fff;border-radius:10px;padding:9px 11px;font-size:14px;font-weight:600;font-family:inherit}
   .inp::placeholder{color:rgba(255,255,255,.55)}
   .inp:focus{outline:none;border-color:var(--orange)}
@@ -114,15 +115,18 @@
   /* ---------- MODAL ---------- */
   .modal-bg{position:fixed;inset:0;background:rgba(5,12,38,.72);display:none;place-items:center;padding:18px;z-index:50;backdrop-filter:blur(4px)}
   .modal-bg.on{display:grid}
-  .modal{background:linear-gradient(180deg,#1c44ad,#122e78);border:2px solid var(--orange);border-radius:20px;padding:24px;max-width:380px;width:100%;box-shadow:var(--shadow);text-align:center}
+  .modal{background:linear-gradient(180deg,#1c44ad,#122e78);border:2px solid var(--orange);border-radius:20px;padding:24px;max-width:380px;width:100%;box-shadow:var(--shadow);text-align:center;max-height:88vh;overflow:auto}
+  .modal.wide{max-width:460px;text-align:left}
   .modal h3{margin:0 0 6px;font-size:21px}
   .modal p{margin:0 0 16px;font-size:14px;opacity:.85}
-  .modal .inp{text-align:center;margin-bottom:12px}
-  .modal .row{display:flex;gap:10px}
+  .modal .inp{margin-bottom:0}
+  .modal.center .inp{text-align:center;margin-bottom:12px}
+  .modal .row{display:flex;gap:10px;margin-top:16px}
   .modal .row .btn{flex:1}
   .msg{min-height:18px;font-size:13px;font-weight:700;margin-top:2px}
   .msg.err{color:#ff9d9d}
   .footer{text-align:center;margin-top:46px;font-size:12.5px;opacity:.6}
+  .createHint{font-size:12.5px;opacity:.8;margin:2px 0 12px}
 
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:#0f7a3a;color:#fff;
     padding:12px 20px;border-radius:999px;font-weight:800;box-shadow:var(--shadow);opacity:0;transition:.28s;z-index:60;pointer-events:none;font-size:14px}
@@ -159,22 +163,34 @@
       <h2>Times inscritos</h2>
       <div class="count" id="countLbl"></div>
     </div>
-    <div class="toolbar" id="toolbar">
-      <button class="btn" id="editBtn">🔒 Editar times</button>
-    </div>
+    <div class="toolbar" id="toolbar"></div>
   </div>
 
   <div id="bannerSlot"></div>
   <div class="grid" id="grid"></div>
 
-  <div class="footer">VNL Tijuquinho · Organizações Tabajara · site dos capitães</div>
+  <div class="footer">VNL Tijuquinho · Organizações Tabajara · qualquer um inscreve seu time · edição só pelos capitães</div>
 </div>
 
-<!-- password modal -->
+<!-- CREATE modal (public) -->
+<div class="modal-bg" id="createModal">
+  <div class="modal wide">
+    <h3>Inscrever um time</h3>
+    <div class="createHint">Qualquer pessoa pode inscrever um time. Depois, só os capitães editam ou removem.</div>
+    <div id="createBody"></div>
+    <div class="msg" id="createMsg"></div>
+    <div class="row">
+      <button class="btn ghost" id="createCancel">Cancelar</button>
+      <button class="btn" id="createOk">Inscrever time</button>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORD modal (captains) -->
 <div class="modal-bg" id="pwModal">
-  <div class="modal">
+  <div class="modal center">
     <h3>Senha dos capitães</h3>
-    <p>Digite a senha compartilhada para editar os times.</p>
+    <p>Editar e excluir times é só para capitães. Digite a senha compartilhada.</p>
     <input class="inp" id="pwInput" type="password" placeholder="senha" autocomplete="off" />
     <div class="msg" id="pwMsg"></div>
     <div class="row">
@@ -189,6 +205,7 @@
 <script>
 const API = '/api/teams';
 let state = { teams: [], configured: true, editing: false, password: '' };
+let newTeam = null;
 
 const $ = (s, r=document) => r.querySelector(s);
 const el = (t, c) => { const e=document.createElement(t); if(c) e.className=c; return e; };
@@ -196,7 +213,7 @@ const esc = s => (s??'').toString();
 
 function toast(msg, bad){
   const t=$('#toast'); t.textContent=msg; t.className='toast on'+(bad?' bad':'');
-  setTimeout(()=>t.className='toast'+(bad?' bad':''),2600);
+  setTimeout(()=>t.className='toast'+(bad?' bad':''),2800);
 }
 
 function blankMember(){ return { name:'', isGirl:false, isExternal:false }; }
@@ -212,13 +229,45 @@ async function load(){
   render();
 }
 
+/* shared editable member row */
+function memberEditRow(m, onRemove, onChange){
+  const li=el('li','m-edit');
+  const inp=el('input','inp'); inp.value=m.name||''; inp.placeholder='Nome do integrante';
+  inp.oninput=e=>m.name=e.target.value; li.appendChild(inp);
+
+  const g=el('label','tick'); const gc=el('input'); gc.type='checkbox'; gc.checked=!!m.isGirl;
+  gc.onchange=e=>{ m.isGirl=e.target.checked; onChange && onChange(); }; g.appendChild(gc); g.appendChild(document.createTextNode('♀'));
+  li.appendChild(g);
+
+  const x=el('label','tick'); const xc=el('input'); xc.type='checkbox'; xc.checked=!!m.isExternal;
+  xc.onchange=e=>{ m.isExternal=e.target.checked; onChange && onChange(); }; x.appendChild(xc); x.appendChild(document.createTextNode('ext'));
+  li.appendChild(x);
+
+  const rm=el('button','x'); rm.textContent='×'; rm.title='remover integrante'; rm.onclick=onRemove;
+  li.appendChild(rm);
+  return li;
+}
+
+function warnBox(team){
+  const real=(team.members||[]).filter(m=>esc(m.name).trim());
+  const girls=real.filter(m=>m.isGirl).length;
+  const ext=real.filter(m=>m.isExternal).length;
+  const warns=[];
+  if(girls<1) warns.push('precisa de ao menos 1 menina ♀');
+  if(ext>2) warns.push('máximo de 2 externos (tem '+ext+')');
+  if(real.length>6) warns.push('máximo de 6 integrantes');
+  if(!warns.length) return null;
+  const w=el('div','warn'); w.textContent='⚠ '+warns.join(' · '); return w;
+}
+
 function render(){
   const grid=$('#grid'); grid.innerHTML='';
   const n=state.teams.length;
   $('#vagas').textContent = n+' / 10';
   $('#countLbl').textContent = n===0 ? 'nenhum time ainda' : n+(n===1?' time':' times')+' · '+(10-n)+' vaga'+((10-n)===1?'':'s')+' restante'+((10-n)===1?'':'s');
 
-  // banner if storage not configured
+  if(!state.editing) resetToolbar();
+
   const bs=$('#bannerSlot'); bs.innerHTML='';
   if(!state.configured){
     const b=el('div','banner');
@@ -227,7 +276,10 @@ function render(){
   }
 
   if(!state.editing && n===0){
-    const e=el('div','empty'); e.textContent='Ainda não há times inscritos. Clique em "Editar times" e adicione o primeiro!';
+    const e=el('div','empty');
+    e.innerHTML='Ainda não há times inscritos.<br>Seja o primeiro!';
+    const b=el('button','btn'); b.textContent='＋ Criar time'; b.onclick=openCreate;
+    e.appendChild(b);
     grid.appendChild(e); return;
   }
 
@@ -281,22 +333,9 @@ function teamEditCard(team,ti){
 
   const ul=el('ul','members');
   (team.members||[]).forEach((m,mi)=>{
-    const li=el('li','m-edit');
-    const inp=el('input','inp'); inp.value=m.name||''; inp.placeholder='Nome do integrante';
-    inp.oninput=e=>m.name=e.target.value; li.appendChild(inp);
-
-    const g=el('label','tick'); const gc=el('input'); gc.type='checkbox'; gc.checked=!!m.isGirl;
-    gc.onchange=e=>m.isGirl=e.target.checked; g.appendChild(gc); g.appendChild(document.createTextNode('♀'));
-    li.appendChild(g);
-
-    const x=el('label','tick'); const xc=el('input'); xc.type='checkbox'; xc.checked=!!m.isExternal;
-    xc.onchange=e=>m.isExternal=e.target.checked; x.appendChild(xc); x.appendChild(document.createTextNode('ext'));
-    li.appendChild(x);
-
-    const rm=el('button','x'); rm.textContent='×'; rm.title='remover integrante';
-    rm.onclick=()=>{ team.members.splice(mi,1); if(team.members.length===0) team.members.push(blankMember()); render(); };
-    li.appendChild(rm);
-    ul.appendChild(li);
+    ul.appendChild(memberEditRow(m,
+      ()=>{ team.members.splice(mi,1); if(team.members.length===0) team.members.push(blankMember()); render(); },
+      render));
   });
   c.appendChild(ul);
 
@@ -306,15 +345,7 @@ function teamEditCard(team,ti){
     c.appendChild(am);
   }
 
-  // validation hints
-  const real=(team.members||[]).filter(m=>esc(m.name).trim());
-  const girls=real.filter(m=>m.isGirl).length;
-  const ext=real.filter(m=>m.isExternal).length;
-  const warns=[];
-  if(girls<1) warns.push('precisa de ao menos 1 menina ♀');
-  if(ext>2) warns.push('máximo de 2 externos (tem '+ext+')');
-  if(real.length>6) warns.push('máximo de 6 integrantes');
-  if(warns.length){ const w=el('div','warn'); w.textContent='⚠ '+warns.join(' · '); c.appendChild(w); }
+  const w=warnBox(team); if(w) c.appendChild(w);
 
   const foot=el('div','foot'); foot.style.marginTop='12px';
   const del=el('button','btn ghost small'); del.textContent='🗑 Remover time';
@@ -324,25 +355,84 @@ function teamEditCard(team,ti){
   return c;
 }
 
-/* ---- edit mode enter/exit ---- */
+/* ---------- CREATE (public) ---------- */
+function openCreate(){
+  newTeam = blankTeam();
+  $('#createMsg').textContent=''; $('#createMsg').className='msg';
+  renderCreate();
+  $('#createModal').classList.add('on');
+  setTimeout(()=>{ const i=$('#createBody .inp'); if(i) i.focus(); },60);
+}
+function closeCreate(){ $('#createModal').classList.remove('on'); }
+function renderCreate(){
+  const box=$('#createBody'); box.innerHTML='';
+  const nameInp=el('input','inp'); nameInp.placeholder='Nome do time'; nameInp.value=newTeam.name;
+  nameInp.oninput=e=>newTeam.name=e.target.value; box.appendChild(nameInp);
+
+  const lbl=el('div'); lbl.style.cssText='font-size:12px;font-weight:800;opacity:.8;margin:14px 0 8px;letter-spacing:.4px'; lbl.textContent='INTEGRANTES (até 6)';
+  box.appendChild(lbl);
+
+  const ul=el('ul','members');
+  newTeam.members.forEach((m,mi)=>{
+    ul.appendChild(memberEditRow(m,
+      ()=>{ newTeam.members.splice(mi,1); if(newTeam.members.length===0) newTeam.members.push(blankMember()); renderCreate(); },
+      renderCreate));
+  });
+  box.appendChild(ul);
+
+  if(newTeam.members.length<6){
+    const am=el('button','btn ghost small addm'); am.textContent='＋ integrante';
+    am.onclick=()=>{ newTeam.members.push(blankMember()); renderCreate(); };
+    box.appendChild(am);
+  }
+  const w=warnBox(newTeam); if(w) box.appendChild(w);
+}
+async function submitCreate(){
+  const t={
+    name:(newTeam.name||'').trim(),
+    members:(newTeam.members||[]).filter(m=>esc(m.name).trim()).map(m=>({name:m.name.trim(),isGirl:!!m.isGirl,isExternal:!!m.isExternal}))
+  };
+  const setErr=x=>{ $('#createMsg').textContent=x; $('#createMsg').className='msg err'; };
+  if(!t.name){ setErr('Dê um nome ao time.'); return; }
+  if(!t.members.length){ setErr('Adicione ao menos 1 integrante.'); return; }
+  if(t.members.length>6){ setErr('Máximo de 6 integrantes.'); return; }
+  if(t.members.filter(m=>m.isExternal).length>2){ setErr('Máximo de 2 externos.'); return; }
+  if(!t.members.some(m=>m.isGirl)){
+    if(!confirm('Este time está sem a menina obrigatória (♀). Inscrever assim mesmo?')) return;
+  }
+  const btn=$('#createOk'); btn.disabled=true; btn.textContent='Inscrevendo...';
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'create',team:t})});
+    const j=await r.json();
+    if(r.ok && j.ok){
+      state.teams=j.teams||state.teams; closeCreate(); render(); toast('Time inscrito! 🏐');
+    }else{
+      setErr(j.message||'Não foi possível inscrever.');
+    }
+  }catch(e){ setErr('Erro de conexão.'); }
+  btn.disabled=false; btn.textContent='Inscrever time';
+}
+
+/* ---------- EDIT (captains) ---------- */
+function resetToolbar(){
+  const tb=$('#toolbar'); tb.innerHTML='';
+  const create=el('button','btn'); create.textContent='＋ Criar time'; create.onclick=openCreate;
+  const edit=el('button','btn ghost'); edit.textContent='🔒 Editar (capitães)'; edit.onclick=openPw;
+  tb.appendChild(create); tb.appendChild(edit);
+}
 function enterEdit(){
   state.editing=true;
   const tb=$('#toolbar'); tb.innerHTML='';
   const save=el('button','btn'); save.id='saveBtn'; save.textContent='💾 Salvar';
   save.onclick=saveTeams;
   const cancel=el('button','btn ghost'); cancel.textContent='Cancelar';
-  cancel.onclick=()=>{ state.editing=false; state.password=''; resetToolbar(); load(); };
+  cancel.onclick=()=>{ state.editing=false; state.password=''; load(); };
   tb.appendChild(save); tb.appendChild(cancel);
   render();
 }
-function resetToolbar(){
-  const tb=$('#toolbar'); tb.innerHTML='';
-  const b=el('button','btn'); b.id='editBtn'; b.textContent='🔒 Editar times';
-  b.onclick=openPw; tb.appendChild(b);
-}
 
 async function saveTeams(){
-  // clean up: drop empty members, keep teams that have a name or a member
   const cleaned = state.teams.map(t=>({
     name:(t.name||'').trim(),
     members:(t.members||[]).filter(m=>esc(m.name).trim()).map(m=>({name:m.name.trim(),isGirl:!!m.isGirl,isExternal:!!m.isExternal}))
@@ -354,7 +444,6 @@ async function saveTeams(){
     if(t.members.length>6){ toast('"'+t.name+'": máx. 6 integrantes.',true); return; }
     if(t.members.filter(m=>m.isExternal).length>2){ toast('"'+t.name+'": máx. 2 externos.',true); return; }
   }
-  // soft warning for girl rule
   const missingGirl=cleaned.filter(t=>t.members.length && !t.members.some(m=>m.isGirl)).map(t=>t.name);
   if(missingGirl.length){
     if(!confirm('Estes times estão sem menina obrigatória:\n\n• '+missingGirl.join('\n• ')+'\n\nSalvar assim mesmo?')) return;
@@ -367,7 +456,7 @@ async function saveTeams(){
     const j=await r.json();
     if(r.ok && j.ok){
       state.teams=j.teams||cleaned; state.editing=false; state.password='';
-      resetToolbar(); render(); toast('Times salvos! ✅');
+      render(); toast('Times salvos! ✅');
     }else{
       toast(j.message||'Não foi possível salvar.',true);
       if(btn){btn.disabled=false;btn.textContent='💾 Salvar';}
@@ -378,7 +467,7 @@ async function saveTeams(){
   }
 }
 
-/* ---- password modal ---- */
+/* ---------- password modal ---------- */
 function openPw(){
   $('#pwInput').value=''; $('#pwMsg').textContent=''; $('#pwMsg').className='msg';
   $('#pwModal').classList.add('on'); setTimeout(()=>$('#pwInput').focus(),60);
@@ -387,12 +476,10 @@ function closePw(){ $('#pwModal').classList.remove('on'); }
 async function tryPw(){
   const pw=$('#pwInput').value;
   if(!pw){ $('#pwMsg').textContent='Digite a senha.'; $('#pwMsg').className='msg err'; return; }
-  // validate against server with an empty no-op? We validate on save; do a quick check:
   const ok=$('#pwOk'); ok.disabled=true; ok.textContent='...';
   try{
     const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({password:pw,teams:state.teams,check:true})});
-    // If password wrong => 401. If right but storage off => 503 (still means pw ok).
+      body:JSON.stringify({password:pw,teams:state.teams})});
     if(r.status===401){ $('#pwMsg').textContent='Senha incorreta.'; $('#pwMsg').className='msg err'; }
     else { state.password=pw; closePw(); enterEdit();
            if(r.status===503) toast('Senha ok. (armazenamento em ativação)'); }
@@ -400,12 +487,15 @@ async function tryPw(){
   ok.disabled=false; ok.textContent='Entrar';
 }
 
-$('#editBtn').onclick=openPw;
+$('#createCancel').onclick=closeCreate;
+$('#createOk').onclick=submitCreate;
 $('#pwCancel').onclick=closePw;
 $('#pwOk').onclick=tryPw;
 $('#pwInput').addEventListener('keydown',e=>{ if(e.key==='Enter') tryPw(); });
 $('#pwModal').addEventListener('click',e=>{ if(e.target.id==='pwModal') closePw(); });
+$('#createModal').addEventListener('click',e=>{ if(e.target.id==='createModal') closeCreate(); });
 
+resetToolbar();
 load();
 </script>
 </body>
