@@ -3,6 +3,10 @@ import { put, list } from '@vercel/blob';
 const BLOB_NAME = 'teams.json';
 const hasBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 const EDIT_PASSWORD = process.env.EDIT_PASSWORD || 'tijuquinho2025';
+// Private history password — owner only, NOT shared with captains.
+// Must be set as an env var (the repo is public, so there is no code default).
+const OWNER_PASSWORD = process.env.OWNER_PASSWORD || '';
+const LOG_MAX = 300; // keep the most recent N history entries
 
 const DEFAULT_SETTINGS = {
   dateBig: '15/11 · 29/11',
@@ -14,21 +18,22 @@ const DEFAULT_SETTINGS = {
 async function readData() {
   const { blobs } = await list({ prefix: BLOB_NAME });
   const found = blobs.find((b) => b.pathname === BLOB_NAME);
-  if (!found) return { teams: [], settings: { ...DEFAULT_SETTINGS } };
+  if (!found) return { teams: [], settings: { ...DEFAULT_SETTINGS }, log: [] };
   // Cache-busting query so we never read a stale CDN copy after an overwrite.
   const bust = found.url + (found.url.includes('?') ? '&' : '?') + 'ts=' + Date.now();
   const r = await fetch(bust, { cache: 'no-store' });
-  if (!r.ok) return { teams: [], settings: { ...DEFAULT_SETTINGS } };
+  if (!r.ok) return { teams: [], settings: { ...DEFAULT_SETTINGS }, log: [] };
   const j = await r.json();
   const teams = Array.isArray(j.teams) ? j.teams : [];
   const settings = sanitizeSettings(j.settings);
-  return { teams, settings };
+  const log = Array.isArray(j.log) ? j.log : [];
+  return { teams, settings, log };
 }
 
-async function writeData(teams, settings) {
+async function writeData(teams, settings, log) {
   await put(
     BLOB_NAME,
-    JSON.stringify({ teams, settings, updatedAt: Date.now() }),
+    JSON.stringify({ teams, settings, log: (log || []).slice(0, LOG_MAX), updatedAt: Date.now() }),
     {
       access: 'public',
       contentType: 'application/json',
@@ -65,6 +70,45 @@ function sanitizeTeam(t) {
   return { name: String(t.name || '').trim(), members };
 }
 
+/* ---------- device / history helpers ---------- */
+function uaSummary(ua) {
+  ua = String(ua || '');
+  let os = '?';
+  if (/iPhone/i.test(ua)) os = 'iPhone';
+  else if (/iPad/i.test(ua)) os = 'iPad';
+  else if (/Android/i.test(ua)) os = 'Android';
+  else if (/Windows/i.test(ua)) os = 'Windows';
+  else if (/Mac OS X|Macintosh/i.test(ua)) os = 'Mac';
+  else if (/Linux/i.test(ua)) os = 'Linux';
+  let br = '?';
+  if (/SamsungBrowser/i.test(ua)) br = 'Samsung';
+  else if (/Edg\//i.test(ua)) br = 'Edge';
+  else if (/OPR\/|Opera/i.test(ua)) br = 'Opera';
+  else if (/Firefox\//i.test(ua)) br = 'Firefox';
+  else if (/Chrome\//i.test(ua)) br = 'Chrome';
+  else if (/Safari\//i.test(ua)) br = 'Safari';
+  return os + ' · ' + br;
+}
+function ipFrom(req) {
+  const xf = String(req.headers['x-forwarded-for'] || '');
+  return (xf.split(',')[0].trim() || String(req.headers['x-real-ip'] || '')).slice(0, 60);
+}
+function deviceFrom(req, body) {
+  return {
+    ua: uaSummary(req.headers['user-agent']),
+    tag: String((body && body.deviceId) || '').replace(/[^a-z0-9]/gi, '').slice(0, 20),
+    ip: ipFrom(req),
+  };
+}
+function teamSig(t) {
+  return (t.members || [])
+    .map((m) => m.name + '|' + (m.isGirl ? '1' : '0') + '|' + (m.isExternal ? '1' : '0'))
+    .join(',');
+}
+function logEntry(action, team, detail, dev) {
+  return { ts: Date.now(), action, team: team || '', detail: detail || '', ...dev };
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -73,6 +117,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   if (req.method === 'GET') {
+    // Public view never exposes the history.
     if (!hasBlob) {
       return res.status(200).json({ teams: [], settings: { ...DEFAULT_SETTINGS }, configured: false });
     }
@@ -90,6 +135,7 @@ export default async function handler(req, res) {
       try { body = JSON.parse(body || '{}'); } catch { body = {}; }
     }
     body = body || {};
+    const dev = deviceFrom(req, body);
 
     // ---- PUBLIC: create a single team (no password needed) ----
     if (body.action === 'create') {
@@ -104,15 +150,33 @@ export default async function handler(req, res) {
         return res.status(400).json({ ok: false, message: 'Maximo de 2 externos.' });
       }
       try {
-        const { teams, settings } = await readData();
+        const { teams, settings, log } = await readData();
         if (teams.length >= 10) {
           return res.status(409).json({ ok: false, message: 'Maximo de 10 times atingido.' });
         }
         teams.push(t);
-        await writeData(teams, settings);
+        log.unshift(logEntry('create', t.name, t.members.length + ' integrantes', dev));
+        await writeData(teams, settings, log);
         return res.status(200).json({ ok: true, teams, settings });
       } catch (e) {
         return res.status(500).json({ ok: false, message: 'Erro ao salvar.', error: String(e) });
+      }
+    }
+
+    // ---- OWNER ONLY: read the history (separate private password) ----
+    if (body.action === 'getlog') {
+      if (!OWNER_PASSWORD) {
+        return res.status(403).json({ ok: false, message: 'Historico protegido: configure OWNER_PASSWORD no Vercel.' });
+      }
+      if ((body.password || '') !== OWNER_PASSWORD) {
+        return res.status(401).json({ ok: false, message: 'Senha incorreta.' });
+      }
+      if (!hasBlob) return res.status(200).json({ ok: true, log: [] });
+      try {
+        const { log } = await readData();
+        return res.status(200).json({ ok: true, log });
+      } catch (e) {
+        return res.status(500).json({ ok: false, message: 'Erro ao ler o historico.', error: String(e) });
       }
     }
 
@@ -127,19 +191,29 @@ export default async function handler(req, res) {
     if (teams.length > 10) {
       return res.status(400).json({ ok: false, message: 'Maximo de 10 times.' });
     }
-    // Settings are optional: if the client sends them, save them; otherwise keep what's stored.
-    let settings;
-    if (body.settings) {
-      settings = sanitizeSettings(body.settings);
-    } else {
-      try {
-        settings = (await readData()).settings;
-      } catch {
-        settings = { ...DEFAULT_SETTINGS };
-      }
-    }
     try {
-      await writeData(teams, settings);
+      const old = await readData();
+      const settings = body.settings ? sanitizeSettings(body.settings) : old.settings;
+      const log = old.log || [];
+
+      // Build history entries by diffing the previous list against the new one.
+      const oldByName = {}; old.teams.forEach((t) => { oldByName[t.name] = t; });
+      const newByName = {}; teams.forEach((t) => { newByName[t.name] = t; });
+      const entries = [];
+      old.teams.forEach((t) => {
+        if (!(t.name in newByName)) entries.push(logEntry('delete', t.name, (t.members || []).length + ' integrantes', dev));
+      });
+      teams.forEach((t) => {
+        if (!(t.name in oldByName)) entries.push(logEntry('create', t.name, t.members.length + ' integrantes', dev));
+        else if (teamSig(t) !== teamSig(oldByName[t.name])) entries.push(logEntry('edit', t.name, t.members.length + ' integrantes', dev));
+      });
+      if (JSON.stringify(settings) !== JSON.stringify(old.settings)) {
+        entries.push(logEntry('settings', '', settings.dateBig + ' · ' + settings.timeBig, dev));
+      }
+      // newest first
+      for (let i = entries.length - 1; i >= 0; i--) log.unshift(entries[i]);
+
+      await writeData(teams, settings, log);
       return res.status(200).json({ ok: true, teams, settings });
     } catch (e) {
       return res.status(500).json({ ok: false, message: 'Erro ao salvar.', error: String(e) });

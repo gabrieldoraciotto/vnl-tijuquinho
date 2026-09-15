@@ -177,6 +177,14 @@
   .msg{min-height:18px;font-size:13px;font-weight:700;margin-top:8px}
   .msg.err{color:#ff9d9d}
 
+  /* ---------- HISTORY ---------- */
+  #logList{display:flex;flex-direction:column;gap:8px;margin:4px 0 6px;max-height:56vh;overflow:auto}
+  .logrow{display:flex;gap:10px;align-items:flex-start;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:12px;padding:9px 11px}
+  .logic{flex:none;font-size:16px;line-height:1.3}
+  .logbody{flex:1;min-width:0}
+  .logtitle{font-weight:700;font-size:13.5px;word-break:break-word}
+  .logsub{font-size:11px;opacity:.62;margin-top:2px;word-break:break-word}
+
   .footer{text-align:center;margin-top:30px;font-size:12px;opacity:.55;line-height:1.5}
 
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:#0f7a3a;color:#fff;
@@ -289,18 +297,47 @@
   </div>
 </div>
 
+<!-- OWNER password sheet (private history) -->
+<div class="modal-bg" id="ownerModal">
+  <div class="modal center">
+    <div class="sheet-handle"></div>
+    <h3>Histórico privado</h3>
+    <p>Só você vê o histórico. Digite a sua senha pessoal (diferente da senha dos capitães).</p>
+    <input class="inp" id="ownerInput" type="password" placeholder="sua senha" autocomplete="off" />
+    <div class="msg" id="ownerMsg"></div>
+    <div class="row">
+      <button class="btn ghost" id="ownerCancel">Cancelar</button>
+      <button class="btn" id="ownerOk">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY sheet (owner only) -->
+<div class="modal-bg" id="logModal">
+  <div class="modal">
+    <div class="sheet-handle"></div>
+    <h3>Histórico de alterações</h3>
+    <div class="hint">Registro de inscrições, edições e exclusões. Visível só para você.</div>
+    <div id="logList"></div>
+    <div class="row">
+      <button class="btn ghost" id="logClose">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const API='/api/teams';
 const DEFAULT_SETTINGS={dateBig:'15/11 · 29/11',dateSub:'a confirmar',timeBig:'13h — 20h',timeSub:'sábado'};
-let state={teams:[],settings:{...DEFAULT_SETTINGS},configured:true,editing:false,password:''};
+let state={teams:[],settings:{...DEFAULT_SETTINGS},configured:true,editing:false,password:'',ownerPassword:''};
 let newTeam=null;
 
 const $=(s,r=document)=>r.querySelector(s);
 const el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
 const esc=s=>(s??'').toString();
 const initials=n=>{const p=esc(n).trim().split(/\s+/);return ((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase()||'?';};
+function deviceId(){try{let d=localStorage.getItem('vnl_dev');if(!d){d='ap'+Math.random().toString(36).slice(2,8);localStorage.setItem('vnl_dev',d);}return d;}catch(e){return '';}}
 
 function toast(msg,bad){
   const t=$('#toast');t.textContent=msg;t.className='toast on'+(bad?' bad':'');
@@ -528,7 +565,7 @@ async function submitCreate(){
   if(!t.members.some(m=>m.isGirl)){if(!confirm('Time sem a menina obrigatória (♀). Inscrever assim mesmo?'))return;}
   const btn=$('#ctOk');btn.disabled=true;btn.textContent='Inscrevendo...';
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create',team:t})});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create',team:t,deviceId:deviceId()})});
     const j=await r.json();
     if(r.ok&&j.ok){state.teams=j.teams||state.teams;closeCreate();render();toast('Time inscrito! 🏐');confetti();}
     else setErr(j.message||'Não foi possível inscrever.');
@@ -547,8 +584,9 @@ function enterEdit(){
   state.editing=true;
   const tb=$('#toolbar');tb.innerHTML='';
   const save=el('button','btn');save.id='saveBtn';save.innerHTML='💾 Salvar';save.onclick=saveTeams;
+  const hist=el('button','btn ghost');hist.innerHTML='🔒 Meu histórico';hist.onclick=openLog;
   const cancel=el('button','btn ghost');cancel.textContent='Cancelar';cancel.onclick=()=>{state.editing=false;state.password='';load();};
-  tb.appendChild(save);tb.appendChild(cancel);render();
+  tb.appendChild(save);tb.appendChild(hist);tb.appendChild(cancel);render();
 }
 async function saveTeams(){
   const cleaned=state.teams.map(t=>({name:(t.name||'').trim(),
@@ -564,7 +602,7 @@ async function saveTeams(){
   if(missing.length&&!confirm('Sem menina obrigatória:\n\n• '+missing.join('\n• ')+'\n\nSalvar assim mesmo?'))return;
   const btn=$('#saveBtn');if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:state.password,teams:cleaned,settings:state.settings})});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:state.password,teams:cleaned,settings:state.settings,deviceId:deviceId()})});
     const j=await r.json();
     if(r.ok&&j.ok){state.teams=j.teams||cleaned;if(j.settings)state.settings=j.settings;state.editing=false;state.password='';render();toast('Alterações salvas! ✅');}
     else{toast(j.message||'Não foi possível salvar.',true);if(btn){btn.disabled=false;btn.innerHTML='💾 Salvar';}}
@@ -586,6 +624,75 @@ async function tryPw(){
   ok.disabled=false;ok.textContent='Entrar';
 }
 
+/* ---------- history / log (captains) ---------- */
+function fmtWhen(ts){
+  const d=new Date(ts||0);
+  if(isNaN(d))return '';
+  return d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+const LOG_META={
+  create:{icon:'➕',label:'inscreveu'},
+  edit:{icon:'✏️',label:'editou'},
+  delete:{icon:'🗑',label:'removeu'},
+  settings:{icon:'🗓️',label:'mudou data/horário'},
+};
+function renderLog(log){
+  const box=$('#logList');box.innerHTML='';
+  if(!log||!log.length){const p=el('p');p.style.opacity='.75';p.textContent='Nenhuma alteração registrada ainda.';box.appendChild(p);return;}
+  log.forEach(e=>{
+    const meta=LOG_META[e.action]||{icon:'•',label:e.action||'ação'};
+    const row=el('div','logrow');
+    const ic=el('div','logic');ic.textContent=meta.icon;row.appendChild(ic);
+    const body=el('div','logbody');
+    const t=el('div','logtitle');
+    t.textContent=meta.label+(e.team?' · '+e.team:'')+(e.detail?' ('+e.detail+')':'');
+    body.appendChild(t);
+    const sub=el('div','logsub');
+    const parts=[fmtWhen(e.ts)];
+    const who=[e.ua,e.tag?('aparelho '+e.tag):'',e.ip].filter(Boolean).join(' · ');
+    if(who)parts.push(who);
+    sub.textContent=parts.filter(Boolean).join('  —  ');
+    body.appendChild(sub);
+    row.appendChild(body);
+    box.appendChild(row);
+  });
+}
+async function loadLog(pw,silent){
+  const box=$('#logList');
+  if(!silent){$('#logModal').classList.add('on');box.innerHTML='<p style="opacity:.75">Carregando...</p>';}
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'getlog',password:pw})});
+    let j={};try{j=await r.json();}catch(e){}
+    if(r.status===401)return '401';
+    if(r.status===403)return '403';
+    if(!r.ok||!j.ok){
+      if(!silent){box.innerHTML='';const p=el('p');p.className='msg err';p.textContent=(j&&j.message)||'Não foi possível carregar o histórico.';box.appendChild(p);}
+      return 'err';
+    }
+    renderLog(j.log||[]);
+    return true;
+  }catch(e){
+    if(!silent){box.innerHTML='';const p=el('p');p.className='msg err';p.textContent='Erro de conexão.';box.appendChild(p);}
+    return 'net';
+  }
+}
+function openLog(){ if(state.ownerPassword)loadLog(state.ownerPassword); else openOwner(); }
+function closeLog(){$('#logModal').classList.remove('on');}
+function openOwner(){$('#ownerInput').value='';$('#ownerMsg').textContent='';$('#ownerMsg').className='msg';$('#ownerModal').classList.add('on');setTimeout(()=>$('#ownerInput').focus(),120);}
+function closeOwner(){$('#ownerModal').classList.remove('on');}
+async function tryOwner(){
+  const pw=$('#ownerInput').value;
+  if(!pw){$('#ownerMsg').textContent='Digite a senha.';$('#ownerMsg').className='msg err';return;}
+  const ok=$('#ownerOk');ok.disabled=true;ok.textContent='...';
+  const res=await loadLog(pw,true);
+  ok.disabled=false;ok.textContent='Entrar';
+  const setErr=t=>{$('#ownerMsg').textContent=t;$('#ownerMsg').className='msg err';};
+  if(res===true){state.ownerPassword=pw;closeOwner();$('#logModal').classList.add('on');}
+  else if(res==='401')setErr('Senha incorreta.');
+  else if(res==='403')setErr('Histórico ainda não configurado no Vercel.');
+  else setErr('Erro de conexão.');
+}
+
 $('#ctCancel').onclick=closeCreate;
 $('#ctOk').onclick=submitCreate;
 $('#pwCancel').onclick=closePw;
@@ -594,6 +701,12 @@ $('#pwInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryPw();});
 $('#ctName').addEventListener('keydown',e=>{if(e.key==='Enter')submitCreate();});
 $('#pwModal').addEventListener('click',e=>{if(e.target.id==='pwModal')closePw();});
 $('#createModal').addEventListener('click',e=>{if(e.target.id==='createModal')closeCreate();});
+$('#logClose').onclick=closeLog;
+$('#logModal').addEventListener('click',e=>{if(e.target.id==='logModal')closeLog();});
+$('#ownerCancel').onclick=closeOwner;
+$('#ownerOk').onclick=tryOwner;
+$('#ownerInput').addEventListener('keydown',e=>{if(e.key==='Enter')tryOwner();});
+$('#ownerModal').addEventListener('click',e=>{if(e.target.id==='ownerModal')closeOwner();});
 
 resetToolbar();
 load();
