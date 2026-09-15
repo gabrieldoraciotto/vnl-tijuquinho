@@ -4,23 +4,53 @@ const BLOB_NAME = 'teams.json';
 const hasBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 const EDIT_PASSWORD = process.env.EDIT_PASSWORD || 'tijuquinho2025';
 
-async function readTeams() {
+const DEFAULT_SETTINGS = {
+  dateBig: '15/11 · 29/11',
+  dateSub: 'a confirmar',
+  timeBig: '13h — 20h',
+  timeSub: 'sábado',
+};
+
+async function readData() {
   const { blobs } = await list({ prefix: BLOB_NAME });
   const found = blobs.find((b) => b.pathname === BLOB_NAME);
-  if (!found) return [];
-  const r = await fetch(found.url, { cache: 'no-store' });
-  if (!r.ok) return [];
+  if (!found) return { teams: [], settings: { ...DEFAULT_SETTINGS } };
+  // Cache-busting query so we never read a stale CDN copy after an overwrite.
+  const bust = found.url + (found.url.includes('?') ? '&' : '?') + 'ts=' + Date.now();
+  const r = await fetch(bust, { cache: 'no-store' });
+  if (!r.ok) return { teams: [], settings: { ...DEFAULT_SETTINGS } };
   const j = await r.json();
-  return Array.isArray(j.teams) ? j.teams : [];
+  const teams = Array.isArray(j.teams) ? j.teams : [];
+  const settings = sanitizeSettings(j.settings);
+  return { teams, settings };
 }
 
-async function writeTeams(teams) {
-  await put(BLOB_NAME, JSON.stringify({ teams, updatedAt: Date.now() }), {
-    access: 'public',
-    contentType: 'application/json',
-    addRandomSuffix: false,
-    allowOverwrite: true,
-  });
+async function writeData(teams, settings) {
+  await put(
+    BLOB_NAME,
+    JSON.stringify({ teams, settings, updatedAt: Date.now() }),
+    {
+      access: 'public',
+      contentType: 'application/json',
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      cacheControlMaxAge: 0, // don't let the CDN cache the data file
+    }
+  );
+}
+
+function sanitizeSettings(s) {
+  s = s || {};
+  const clip = (v, fallback) => {
+    const str = String(v == null ? '' : v).trim().slice(0, 80);
+    return str || fallback;
+  };
+  return {
+    dateBig: clip(s.dateBig, DEFAULT_SETTINGS.dateBig),
+    dateSub: clip(s.dateSub, DEFAULT_SETTINGS.dateSub),
+    timeBig: clip(s.timeBig, DEFAULT_SETTINGS.timeBig),
+    timeSub: clip(s.timeSub, DEFAULT_SETTINGS.timeSub),
+  };
 }
 
 function sanitizeTeam(t) {
@@ -43,12 +73,14 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   if (req.method === 'GET') {
-    if (!hasBlob) return res.status(200).json({ teams: [], configured: false });
+    if (!hasBlob) {
+      return res.status(200).json({ teams: [], settings: { ...DEFAULT_SETTINGS }, configured: false });
+    }
     try {
-      const teams = await readTeams();
-      return res.status(200).json({ teams, configured: true });
+      const { teams, settings } = await readData();
+      return res.status(200).json({ teams, settings, configured: true });
     } catch (e) {
-      return res.status(200).json({ teams: [], configured: true, error: String(e) });
+      return res.status(200).json({ teams: [], settings: { ...DEFAULT_SETTINGS }, configured: true, error: String(e) });
     }
   }
 
@@ -72,19 +104,19 @@ export default async function handler(req, res) {
         return res.status(400).json({ ok: false, message: 'Maximo de 2 externos.' });
       }
       try {
-        const teams = await readTeams();
+        const { teams, settings } = await readData();
         if (teams.length >= 10) {
           return res.status(409).json({ ok: false, message: 'Maximo de 10 times atingido.' });
         }
         teams.push(t);
-        await writeTeams(teams);
-        return res.status(200).json({ ok: true, teams });
+        await writeData(teams, settings);
+        return res.status(200).json({ ok: true, teams, settings });
       } catch (e) {
         return res.status(500).json({ ok: false, message: 'Erro ao salvar.', error: String(e) });
       }
     }
 
-    // ---- CAPTAINS ONLY: full save (edit + delete) ----
+    // ---- CAPTAINS ONLY: full save (edit + delete teams and settings) ----
     if ((body.password || '') !== EDIT_PASSWORD) {
       return res.status(401).json({ ok: false, message: 'Senha incorreta.' });
     }
@@ -95,9 +127,20 @@ export default async function handler(req, res) {
     if (teams.length > 10) {
       return res.status(400).json({ ok: false, message: 'Maximo de 10 times.' });
     }
+    // Settings are optional: if the client sends them, save them; otherwise keep what's stored.
+    let settings;
+    if (body.settings) {
+      settings = sanitizeSettings(body.settings);
+    } else {
+      try {
+        settings = (await readData()).settings;
+      } catch {
+        settings = { ...DEFAULT_SETTINGS };
+      }
+    }
     try {
-      await writeTeams(teams);
-      return res.status(200).json({ ok: true, teams });
+      await writeData(teams, settings);
+      return res.status(200).json({ ok: true, teams, settings });
     } catch (e) {
       return res.status(500).json({ ok: false, message: 'Erro ao salvar.', error: String(e) });
     }

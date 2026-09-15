@@ -65,6 +65,9 @@
   .cell .big{font-family:var(--disp);font-size:clamp(20px,4.4vw,30px);letter-spacing:.5px;line-height:1}
   .cell .sub{font-size:11px;opacity:.7;margin-top:5px;font-weight:600}
   .cell.vagas{grid-column:auto}
+  .cell .inp.board-inp{padding:8px 10px;font-size:15px;margin-top:6px}
+  .cell .inp.board-inp.sub{font-size:12px;opacity:.9}
+  .cell.editing{border-color:rgba(246,135,31,.5)}
   .vagas-top{display:flex;align-items:baseline;gap:8px}
   .vagas-num{font-family:var(--disp);font-size:clamp(30px,8vw,44px);line-height:.9;color:var(--white)}
   .vagas-num .of{font-size:.5em;opacity:.6;margin-left:2px}
@@ -227,8 +230,8 @@
   </header>
 
   <section class="board">
-    <div class="cell"><div class="lbl">Data</div><div class="big">15/11 · 29/11</div><div class="sub">a confirmar</div></div>
-    <div class="cell"><div class="lbl">Horário</div><div class="big">13h — 20h</div><div class="sub">sábado</div></div>
+    <div class="cell" id="cellData"></div>
+    <div class="cell" id="cellTime"></div>
     <div class="cell vagas">
       <div class="lbl">Vagas preenchidas</div>
       <div class="vagas-top"><div class="vagas-num"><span id="vagasFilled">0</span><span class="of">/10</span></div></div>
@@ -290,7 +293,8 @@
 
 <script>
 const API='/api/teams';
-let state={teams:[],configured:true,editing:false,password:''};
+const DEFAULT_SETTINGS={dateBig:'15/11 · 29/11',dateSub:'a confirmar',timeBig:'13h — 20h',timeSub:'sábado'};
+let state={teams:[],settings:{...DEFAULT_SETTINGS},configured:true,editing:false,password:''};
 let newTeam=null;
 
 const $=(s,r=document)=>r.querySelector(s);
@@ -325,6 +329,7 @@ async function load(){
   try{
     const r=await fetch(API,{cache:'no-store'});const j=await r.json();
     state.teams=Array.isArray(j.teams)?j.teams:[];
+    state.settings={...DEFAULT_SETTINGS,...(j.settings||{})};
     state.configured=j.configured!==false;
   }catch(e){state.teams=[];}
   render();
@@ -356,9 +361,32 @@ function warnBox(team){
   const d=el('div','warn');d.textContent='⚠ '+w.join(' · ');return d;
 }
 
+function renderBoard(){
+  const s=state.settings||DEFAULT_SETTINGS;
+  const cells=[
+    {id:'#cellData',lbl:'Data',bigKey:'dateBig',subKey:'dateSub'},
+    {id:'#cellTime',lbl:'Horário',bigKey:'timeBig',subKey:'timeSub'},
+  ];
+  cells.forEach(cfg=>{
+    const cell=$(cfg.id);cell.innerHTML='';cell.classList.toggle('editing',state.editing);
+    const lbl=el('div','lbl');lbl.textContent=cfg.lbl;cell.appendChild(lbl);
+    if(state.editing){
+      const big=el('input','inp board-inp');big.value=s[cfg.bigKey]||'';big.placeholder=cfg.lbl;
+      big.oninput=e=>state.settings[cfg.bigKey]=e.target.value;
+      const sub=el('input','inp board-inp sub');sub.value=s[cfg.subKey]||'';sub.placeholder='detalhe (ex.: a confirmar)';
+      sub.oninput=e=>state.settings[cfg.subKey]=e.target.value;
+      cell.appendChild(big);cell.appendChild(sub);
+    }else{
+      const big=el('div','big');big.textContent=s[cfg.bigKey]||'';cell.appendChild(big);
+      const sub=el('div','sub');sub.textContent=s[cfg.subKey]||'';cell.appendChild(sub);
+    }
+  });
+}
+
 function render(){
   const grid=$('#grid');grid.innerHTML='';
   const n=state.teams.length;
+  renderBoard();
   animateVagas(n);
   renderSlots(n);
   $('#countLbl').textContent=n===0?'nenhum time ainda':n+(n===1?' time':' times')+' · '+(10-n)+' vaga'+((10-n)===1?'':'s')+' restante'+((10-n)===1?'':'s');
@@ -536,9 +564,9 @@ async function saveTeams(){
   if(missing.length&&!confirm('Sem menina obrigatória:\n\n• '+missing.join('\n• ')+'\n\nSalvar assim mesmo?'))return;
   const btn=$('#saveBtn');if(btn){btn.disabled=true;btn.textContent='Salvando...';}
   try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:state.password,teams:cleaned})});
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:state.password,teams:cleaned,settings:state.settings})});
     const j=await r.json();
-    if(r.ok&&j.ok){state.teams=j.teams||cleaned;state.editing=false;state.password='';render();toast('Times salvos! ✅');}
+    if(r.ok&&j.ok){state.teams=j.teams||cleaned;if(j.settings)state.settings=j.settings;state.editing=false;state.password='';render();toast('Alterações salvas! ✅');}
     else{toast(j.message||'Não foi possível salvar.',true);if(btn){btn.disabled=false;btn.innerHTML='💾 Salvar';}}
   }catch(e){toast('Erro de conexão ao salvar.',true);if(btn){btn.disabled=false;btn.innerHTML='💾 Salvar';}}
 }
